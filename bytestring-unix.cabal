@@ -1,0 +1,37 @@
+----------------------------------------------------------------
+-- wren ng thornton <wren@community.haskell.org>    ~ 2010.11.10
+----------------------------------------------------------------
+
+Name:           bytestring-unix
+Version:        0.1.0
+Cabal-Version:  >= 1.2
+Build-Type:     Simple
+Stability:      experimental
+Copyright:      Copyright (c) 2010 wren ng thornton
+License:        BSD3
+License-File:   LICENSE
+Author:         wren ng thornton
+Maintainer:     wren@community.haskell.org
+Homepage:       http://code.haskell.org/~wren/
+Category:       Data
+Synopsis:       Provides ByteString versions of the System.Posix.IO
+                file-descriptor based I/O API.
+Description:    Provides ByteString versions of the System.Posix.IO 
+                file-descriptor based I/O API.
+
+----------------------------------------------------------------
+Library
+    Hs-Source-Dirs:  src
+    Exposed-Modules: Data.ByteString.Posix
+                   , Data.ByteString.Lazy.Posix
+
+    -- unix-2.4.0.0 (which introduced the fdReadBuf/fdWriteBuf
+    -- functions) requires base>=4.1 so we might as well just require
+    -- base-4 too instead of having all those flags for different
+    -- versions of base.
+    Build-Depends: base       == 4.*
+                 , bytestring >= 0.9.1.5
+                 , unix       >= 2.4.0.0
+
+----------------------------------------------------------------
+----------------------------------------------------------- fin.
