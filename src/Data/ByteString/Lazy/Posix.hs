@@ -19,14 +19,10 @@ module Data.ByteString.Lazy.Posix
     , fdWrite
     ) where
 
-import qualified Data.ByteString          as BS
-import qualified Data.ByteString.Lazy     as BL
-import qualified Data.ByteString.Unsafe   as BU
-import qualified Data.ByteString.Internal as BI
-import           System.Posix.Types       (Fd, ByteCount)
-import qualified System.Posix.IO          as Posix
-import qualified System.IO.Error          as IOE
-import qualified Foreign.Ptr              as FFI (castPtr)
+import qualified Data.ByteString.Posix         as BSP
+import qualified Data.ByteString.Lazy          as BL
+import qualified Data.ByteString.Lazy.Internal as BLI
+import           System.Posix.Types            (Fd, ByteCount)
 
 ----------------------------------------------------------------
 
@@ -37,26 +33,23 @@ fdRead
     :: Fd
     -> ByteCount                     -- ^ How many bytes to try to read.
     -> IO (BL.ByteString, ByteCount) -- ^ The bytes read, how many
-                                     -- bytes were actually read.
+                                     --   bytes were actually read.
 fdRead _  0 = return (BL.empty, 0)
 fdRead fd n = do
-    s <- BI.createAndTrim (fromIntegral n) $ \buf -> do
-        rc <- Posix.fdReadBuf fd buf n
-        if 0 == rc
-            then IOE.ioError
-                (IOE.ioeSetErrorString
-                    (IOE.mkIOError IOE.eofErrorType "fdRead" Nothing Nothing)
-                    "EOF")
-            else return (fromIntegral rc)
-    return (s, fromIntegral (BL.length s))
+    (s,n') <- BSP.fdRead fd n
+    return (BL.fromChunks [s], n')
 
 
 -- | Write a 'BL.ByteString' to an 'Fd'.
 fdWrite :: Fd -> BL.ByteString -> IO ByteCount
-fdWrite fd s =
-    BU.unsafeUseAsCStringLen s $ \(buf,len) -> do
-        rc <- Posix.fdWriteBuf fd (FFI.castPtr buf) (fromIntegral len)
-        return (fromIntegral rc)
+fdWrite fd =
+    BLI.foldlChunks
+        (\ accM s -> do
+            acc <- accM
+            rc  <- BSP.fdWrite fd s
+            -- BUG: detect when (rc /= BL.length s) and respond somehow
+            return $! acc+rc)
+        (return 0)
 
 ----------------------------------------------------------------
 ----------------------------------------------------------- fin.

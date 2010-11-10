@@ -20,8 +20,8 @@ module Data.ByteString.Posix
     ) where
 
 import qualified Data.ByteString          as BS
-import qualified Data.ByteString.Unsafe   as BU
-import qualified Data.ByteString.Internal as BI
+import qualified Data.ByteString.Internal as BSI
+import qualified Data.ByteString.Unsafe   as BSU
 import           System.Posix.Types       (Fd, ByteCount)
 import qualified System.Posix.IO          as Posix
 import qualified System.IO.Error          as IOE
@@ -36,10 +36,10 @@ fdRead
     :: Fd
     -> ByteCount                     -- ^ How many bytes to try to read.
     -> IO (BS.ByteString, ByteCount) -- ^ The bytes read, how many
-                                     -- bytes were actually read.
+                                     --   bytes were actually read.
 fdRead _  0 = return (BS.empty, 0)
 fdRead fd n = do
-    s <- BI.createAndTrim (fromIntegral n) $ \buf -> do
+    s <- BSI.createAndTrim (fromIntegral n) $ \buf -> do
         rc <- Posix.fdReadBuf fd buf n
         if 0 == rc
             then IOE.ioError
@@ -58,7 +58,7 @@ fdRead fd n = do
                     "EOF")
             n' -> do
                 -- N.B., @buf@ will be freed on exit so we can't use
-                -- BU.unsafePackCStringLen to avoid copying (also that
+                -- BSU.unsafePackCStringLen to avoid copying (also that
                 -- function would give a result with no finalizer and
                 -- which wouldn't be GCed).
                 s <- BS.packCStringLen (FFI.castPtr buf, fromIntegral n')
@@ -69,10 +69,10 @@ fdRead fd n = do
 -- | Write a 'BS.ByteString' to an 'Fd'.
 fdWrite :: Fd -> BS.ByteString -> IO ByteCount
 fdWrite fd s =
-    -- N.B., BU.unsafeUseAsCStringLen does zero copying. Use
+    -- N.B., BSU.unsafeUseAsCStringLen does zero copying. Use
     -- B.useAsCStringLen if there's any chance Posix.fdWriteBuf
     -- might alter the buffer.
-    BU.unsafeUseAsCStringLen s $ \(buf,len) -> do
+    BSU.unsafeUseAsCStringLen s $ \(buf,len) -> do
         rc <- Posix.fdWriteBuf fd (FFI.castPtr buf) (fromIntegral len)
         return (fromIntegral rc)
 

@@ -3,7 +3,7 @@
 ----------------------------------------------------------------
 
 Name:           bytestring-unix
-Version:        0.1.0
+Version:        0.0.0
 Cabal-Version:  >= 1.2
 Build-Type:     Simple
 Stability:      experimental
@@ -29,6 +29,8 @@ Library
     -- functions) requires base>=4.1 so we might as well just require
     -- base-4 too instead of having all those flags for different
     -- versions of base.
+    --
+    -- Not sure what the real minbound is on bytestring...
     Build-Depends: base       == 4.*
                  , bytestring >= 0.9.1.5
                  , unix       >= 2.4.0.0
