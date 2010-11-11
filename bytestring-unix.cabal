@@ -3,11 +3,11 @@
 ----------------------------------------------------------------
 
 Name:           bytestring-unix
-Version:        0.0.0
+Version:        0.0.1
 -- Source-Repository requires version 1.6
 Cabal-Version:  >= 1.6
 Build-Type:     Simple
-Stability:      experimental
+Stability:      provisional
 Copyright:      Copyright (c) 2010 wren ng thornton
 License:        BSD3
 License-File:   LICENSE
@@ -16,12 +16,14 @@ Maintainer:     wren@community.haskell.org
 Homepage:       http://code.haskell.org/~wren/
 Category:       Data
 Synopsis:       Unix/Posix-specific functions for ByteStrings.
-Description:    Provides ByteString versions of the System.Posix.IO 
+Description:    Unix/Posix-specific functions for ByteStrings.
+                .
+                Provides ByteString versions of the System.Posix.IO 
                 file-descriptor based I/O API.
 
 Source-Repository head
     Type:     darcs
-    Location: http://community.haskell.org/~wren/bytestring-trie
+    Location: http://community.haskell.org/~wren/bytestring-unix
 
 ----------------------------------------------------------------
 Library

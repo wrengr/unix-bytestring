@@ -6,8 +6,8 @@
 -- Copyright   :  Copyright (c) 2010 wren ng thornton
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
--- Stability   :  experimental
--- Portability :  portable
+-- Stability   :  provisional
+-- Portability :  non-portable (Posix)
 --
 -- Provides strict 'ByteString' versions of the "System.Posix.IO"
 -- file-descriptor based I/O API.
@@ -47,7 +47,9 @@ fdRead fd n = do
                     (IOE.mkIOError IOE.eofErrorType "fdRead" Nothing Nothing)
                     "EOF")
             else return (fromIntegral rc)
-    return (s, fromIntegral (BS.length s))
+    let rc = fromIntegral (BS.length s) in rc `seq` do
+    return (s, rc)
+    
     {- -- This version is closer to the version for String.
     Foreign.Marshal.Alloc.allocaBytes (fromIntegral n) $ \buf -> do
         rc <- Posix.fdReadBuf fd buf n
@@ -73,8 +75,7 @@ fdWrite fd s =
     -- B.useAsCStringLen if there's any chance Posix.fdWriteBuf
     -- might alter the buffer.
     BSU.unsafeUseAsCStringLen s $ \(buf,len) -> do
-        rc <- Posix.fdWriteBuf fd (FFI.castPtr buf) (fromIntegral len)
-        return (fromIntegral rc)
+        Posix.fdWriteBuf fd (FFI.castPtr buf) (fromIntegral len)
 
 ----------------------------------------------------------------
 ----------------------------------------------------------- fin.

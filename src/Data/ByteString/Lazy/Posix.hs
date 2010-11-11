@@ -6,8 +6,8 @@
 -- Copyright   :  Copyright (c) 2010 wren ng thornton
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
--- Stability   :  experimental
--- Portability :  portable
+-- Stability   :  provisional
+-- Portability :  non-portable (Posix)
 --
 -- Provides lazy 'ByteString' versions of the "System.Posix.IO"
 -- file-descriptor based I/O API.
@@ -19,6 +19,7 @@ module Data.ByteString.Lazy.Posix
     , fdWrite
     ) where
 
+import qualified Data.ByteString               as BS
 import qualified Data.ByteString.Posix         as BSP
 import qualified Data.ByteString.Lazy          as BL
 import qualified Data.ByteString.Lazy.Internal as BLI
@@ -43,12 +44,16 @@ fdRead fd n = do
 -- | Write a 'BL.ByteString' to an 'Fd'.
 fdWrite :: Fd -> BL.ByteString -> IO ByteCount
 fdWrite fd =
-    BLI.foldlChunks
-        (\ accM s -> do
-            acc <- accM
-            rc  <- BSP.fdWrite fd s
-            -- BUG: detect when (rc /= BL.length s) and respond somehow
-            return $! acc+rc)
+    BLI.foldrChunks
+        (\ s rest -> do
+            rc <- BSP.fdWrite fd s
+            -- TODO: are the semantics of this correct?
+            if rc == fromIntegral (BS.length s)
+                then do
+                    acc <- rest
+                    return $! acc+rc
+                else do
+                    return rc)
         (return 0)
 
 ----------------------------------------------------------------
