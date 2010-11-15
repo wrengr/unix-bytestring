@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2010.11.10
+--                                                    2010.11.14
 -- |
 -- Module      :  Data.ByteString.Lazy.Posix
 -- Copyright   :  Copyright (c) 2010 wren ng thornton
@@ -44,10 +44,11 @@ fdRead fd n = do
 -- | Write a 'BL.ByteString' to an 'Fd'.
 fdWrite :: Fd -> BL.ByteString -> IO ByteCount
 fdWrite fd =
+    -- N.B., we have to do a right fold in order to exit early on
+    -- incomplete writes.
     BLI.foldrChunks
         (\ s rest -> do
             rc <- BSP.fdWrite fd s
-            -- TODO: are the semantics of this correct?
             if rc == fromIntegral (BS.length s)
                 then do
                     acc <- rest
