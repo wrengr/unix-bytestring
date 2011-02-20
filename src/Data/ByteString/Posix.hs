@@ -3,7 +3,7 @@
 --                                                    2010.11.10
 -- |
 -- Module      :  Data.ByteString.Posix
--- Copyright   :  Copyright (c) 2010 wren ng thornton
+-- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
 -- Stability   :  provisional

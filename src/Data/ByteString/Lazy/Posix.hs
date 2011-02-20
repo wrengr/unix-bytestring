@@ -1,9 +1,9 @@
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2010.11.14
+--                                                    2011.02.20
 -- |
 -- Module      :  Data.ByteString.Lazy.Posix
--- Copyright   :  Copyright (c) 2010 wren ng thornton
+-- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
 -- Stability   :  provisional
@@ -43,19 +43,18 @@ fdRead fd n = do
 
 -- | Write a 'BL.ByteString' to an 'Fd'.
 fdWrite :: Fd -> BL.ByteString -> IO ByteCount
-fdWrite fd =
-    -- N.B., we have to do a right fold in order to exit early on
-    -- incomplete writes.
-    BLI.foldrChunks
-        (\ s rest -> do
-            rc <- BSP.fdWrite fd s
-            if rc == fromIntegral (BS.length s)
-                then do
-                    acc <- rest
-                    return $! acc+rc
-                else do
-                    return rc)
-        (return 0)
+fdWrite fd = go 0
+    where
+    -- We want to do a left fold in order to avoid stack overflows,
+    -- but we need to have an early exit for incomplete writes
+    -- (which normally requires a right fold). Hence this recursion.
+    go acc BLI.Empty        = return acc
+    go acc (BLI.Chunk c cs) = do
+        rc <- BSP.fdWrite fd c
+        let acc' = acc+rc in acc' `seq` do
+        if rc == fromIntegral (BS.length c)
+            then go acc' cs
+            else return acc'
 
 ----------------------------------------------------------------
 ----------------------------------------------------------- fin.

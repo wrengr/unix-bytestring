@@ -1,3 +1,5 @@
+0.0.2 (2011-02-20):
+    - Fixed stack overflow possibility in Lazy.fdWrite
 0.0.1 (2010-11-10):
     - Added lazy variants
 0.0.0 (2010-11-10):
