@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2010.11.10
+--                                                    2011.02.27
 -- |
--- Module      :  Data.ByteString.Posix
+-- Module      :  System.Posix.IO.ByteString
 -- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
@@ -12,7 +12,7 @@
 -- Provides strict 'ByteString' versions of the "System.Posix.IO"
 -- file-descriptor based I/O API.
 ----------------------------------------------------------------
-module Data.ByteString.Posix
+module System.Posix.IO.ByteString
     (
     -- * I/O with file descriptors
       fdRead

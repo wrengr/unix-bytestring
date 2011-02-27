@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2011.02.20
+--                                                    2011.02.27
 -- |
--- Module      :  Data.ByteString.Lazy.Posix
+-- Module      :  System.Posix.IO.ByteString.Lazy
 -- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
@@ -12,7 +12,7 @@
 -- Provides lazy 'ByteString' versions of the "System.Posix.IO"
 -- file-descriptor based I/O API.
 ----------------------------------------------------------------
-module Data.ByteString.Lazy.Posix
+module System.Posix.IO.ByteString.Lazy
     (
     -- * I/O with file descriptors
       fdRead
@@ -20,7 +20,7 @@ module Data.ByteString.Lazy.Posix
     ) where
 
 import qualified Data.ByteString               as BS
-import qualified Data.ByteString.Posix         as BSP
+import qualified System.Posix.IO.ByteString    as PosixBS
 import qualified Data.ByteString.Lazy          as BL
 import qualified Data.ByteString.Lazy.Internal as BLI
 import           System.Posix.Types            (Fd, ByteCount)
@@ -37,7 +37,7 @@ fdRead
                                      --   bytes were actually read.
 fdRead _  0 = return (BL.empty, 0)
 fdRead fd n = do
-    (s,n') <- BSP.fdRead fd n
+    (s,n') <- PosixBS.fdRead fd n
     return (BL.fromChunks [s], n')
 
 
@@ -50,7 +50,7 @@ fdWrite fd = go 0
     -- (which normally requires a right fold). Hence this recursion.
     go acc BLI.Empty        = return acc
     go acc (BLI.Chunk c cs) = do
-        rc <- BSP.fdWrite fd c
+        rc <- PosixBS.fdWrite fd c
         let acc' = acc+rc in acc' `seq` do
         if rc == fromIntegral (BS.length c)
             then go acc' cs

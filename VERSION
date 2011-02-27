@@ -1,3 +1,7 @@
+0.1.0 (2011-02-27):
+    - Moved Data.ByteString.Posix to System.Posix.IO.ByteString
+    - Moved Data.ByteString.Lazy.Posix to System.Posix.IO.ByteString.Lazy
+
 0.0.2 (2011-02-20):
     - Fixed stack overflow possibility in Lazy.fdWrite
 0.0.1 (2010-11-10):

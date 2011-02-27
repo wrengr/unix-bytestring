@@ -1,9 +1,9 @@
 ----------------------------------------------------------------
--- wren ng thornton <wren@community.haskell.org>    ~ 2011.02.20
+-- wren ng thornton <wren@community.haskell.org>    ~ 2011.02.27
 ----------------------------------------------------------------
 
 Name:           bytestring-unix
-Version:        0.0.2
+Version:        0.1.0
 -- Source-Repository requires version 1.6
 Cabal-Version:  >= 1.6
 Build-Type:     Simple
@@ -28,8 +28,8 @@ Source-Repository head
 ----------------------------------------------------------------
 Library
     Hs-Source-Dirs:  src
-    Exposed-Modules: Data.ByteString.Posix
-                   , Data.ByteString.Lazy.Posix
+    Exposed-Modules: System.Posix.IO.ByteString
+                   , System.Posix.IO.ByteString.Lazy
 
     -- unix-2.4.0.0 (which introduced the fdReadBuf/fdWriteBuf
     -- functions) requires base>=4.1 so we might as well just require
