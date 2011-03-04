@@ -1,4 +1,5 @@
 0.2.0 (2011-XX-XX):
+    - System.Posix.IO.ByteString: added fdWrites and fdWritev
     - Renamed package to unix-bytestring
 
 0.1.0 (2011-02-27):

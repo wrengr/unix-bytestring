@@ -31,13 +31,12 @@ Library
     Exposed-Modules: System.Posix.IO.ByteString
                    , System.Posix.IO.ByteString.Lazy
 
-    -- unix-2.4.0.0 (which introduced the fdReadBuf/fdWriteBuf
-    -- functions) requires base>=4.1 so we might as well just require
-    -- base-4 too instead of having all those flags for different
-    -- versions of base.
+    -- We require base>=4.1 for Foreign.C.Error.throwErrnoIfMinus1Retry.
+    -- We require unix>=2.4 for System.Posix.IO.fdReadBuf/fdWriteBuf,
+    -- and unix-2.4.0.0 requires base>=4.1 too.
     --
     -- Not sure what the real minbound is on bytestring...
-    Build-Depends: base       >= 4 && < 5
+    Build-Depends: base       >= 4.1 && < 5
                  , bytestring >= 0.9.1.5
                  , unix       >= 2.4.0.0
 

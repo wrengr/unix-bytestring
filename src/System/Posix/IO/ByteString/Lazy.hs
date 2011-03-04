@@ -10,11 +10,11 @@
 -- Portability :  non-portable (Posix)
 --
 -- Provides lazy 'ByteString' versions of the "System.Posix.IO"
--- file-descriptor based I/O API.
+-- file-descriptor based I\/O API.
 ----------------------------------------------------------------
 module System.Posix.IO.ByteString.Lazy
     (
-    -- * I/O with file descriptors
+    -- * I\/O with file descriptors
       fdRead
     , fdWrite
     ) where
@@ -33,7 +33,7 @@ import           System.Posix.Types            (Fd, ByteCount)
 fdRead
     :: Fd
     -> ByteCount                     -- ^ How many bytes to try to read.
-    -> IO (BL.ByteString, ByteCount) -- ^ The bytes read, how many
+    -> IO (BL.ByteString, ByteCount) -- ^ The bytes read, and how many
                                      --   bytes were actually read.
 fdRead _  0 = return (BL.empty, 0)
 fdRead fd n = do
