@@ -1,3 +1,6 @@
+0.2.0 (2011-XX-XX):
+    - Renamed package to unix-bytestring
+
 0.1.0 (2011-02-27):
     - Moved Data.ByteString.Posix to System.Posix.IO.ByteString
     - Moved Data.ByteString.Lazy.Posix to System.Posix.IO.ByteString.Lazy

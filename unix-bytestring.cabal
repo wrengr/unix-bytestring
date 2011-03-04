@@ -1,9 +1,9 @@
 ----------------------------------------------------------------
--- wren ng thornton <wren@community.haskell.org>    ~ 2011.02.27
+-- wren ng thornton <wren@community.haskell.org>    ~ 2011.03.04
 ----------------------------------------------------------------
 
-Name:           bytestring-unix
-Version:        0.1.0
+Name:           unix-bytestring
+Version:        0.2.0
 -- Source-Repository requires version 1.6
 Cabal-Version:  >= 1.6
 Build-Type:     Simple
@@ -23,7 +23,7 @@ Description:    Unix/Posix-specific functions for ByteStrings.
 
 Source-Repository head
     Type:     darcs
-    Location: http://community.haskell.org/~wren/bytestring-unix
+    Location: http://community.haskell.org/~wren/unix-bytestring
 
 ----------------------------------------------------------------
 Library
