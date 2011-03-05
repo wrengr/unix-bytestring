@@ -3,11 +3,11 @@
 ----------------------------------------------------------------
 
 Name:           unix-bytestring
-Version:        0.2.0
+Version:        0.2.0.1
 -- Source-Repository requires version 1.6
 Cabal-Version:  >= 1.6
 Build-Type:     Simple
-Stability:      provisional
+Stability:      experimental
 Copyright:      Copyright (c) 2010--2011 wren ng thornton
 License:        BSD3
 License-File:   LICENSE

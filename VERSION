@@ -1,4 +1,6 @@
-0.2.0 (2011-XX-XX):
+0.2.0.1 (2011-03-05):
+    - Changed stability to experimental.
+0.2.0 (2011-03-05):
     - Added new module System.Posix.Types.Iovec
     - System.Posix.IO.ByteString.Lazy: added fdWritev
     - System.Posix.IO.ByteString.Lazy: changed fdWrite to fdWrites

@@ -7,7 +7,7 @@
 -- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
--- Stability   :  provisional
+-- Stability   :  experimental
 -- Portability :  non-portable (requires POSIX)
 --
 -- Provides lazy 'BL.ByteString' versions of the "System.Posix.IO"
