@@ -1,4 +1,6 @@
 0.2.0 (2011-XX-XX):
+    - Added new module System.Posix.Types.Iovec
+    - System.Posix.IO.ByteString.Lazy: added fdWritev
     - System.Posix.IO.ByteString.Lazy: changed fdWrite to fdWrites
     - System.Posix.IO.ByteString: added fdWrites and fdWritev
     - Renamed package to unix-bytestring

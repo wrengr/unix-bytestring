@@ -30,6 +30,7 @@ Library
     Hs-Source-Dirs:  src
     Exposed-Modules: System.Posix.IO.ByteString
                    , System.Posix.IO.ByteString.Lazy
+                   , System.Posix.Types.Iovec
 
     -- We require base>=4.1 for Foreign.C.Error.throwErrnoIfMinus1Retry.
     -- We require unix>=2.4 for System.Posix.IO.fdReadBuf/fdWriteBuf,

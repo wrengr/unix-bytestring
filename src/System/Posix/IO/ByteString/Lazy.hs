@@ -10,7 +10,7 @@
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
 --
--- Provides lazy 'ByteString' versions of the "System.Posix.IO"
+-- Provides lazy 'BL.ByteString' versions of the "System.Posix.IO"
 -- file-descriptor based I\/O API.
 ----------------------------------------------------------------
 module System.Posix.IO.ByteString.Lazy
@@ -18,7 +18,7 @@ module System.Posix.IO.ByteString.Lazy
     -- * I\/O with file descriptors
       fdRead
     , fdWrites
-    -- TODO: fdWritev
+    , fdWritev
     ) where
 
 import qualified Data.ByteString               as BS
@@ -34,9 +34,10 @@ import           System.Posix.Types            (Fd, ByteCount)
 -- been reached.
 fdRead
     :: Fd
-    -> ByteCount                     -- ^ How many bytes to try to read.
-    -> IO (BL.ByteString, ByteCount) -- ^ The bytes read, and how many
-                                     --   bytes were actually read.
+    -> ByteCount
+        -- ^ How many bytes to try to read.
+    -> IO (BL.ByteString, ByteCount)
+        -- ^ The bytes read, and how many bytes were actually read.
 fdRead _  0 = return (BL.empty, 0)
 fdRead fd n = do
     (s,n') <- PosixBS.fdRead fd n
@@ -44,11 +45,15 @@ fdRead fd n = do
 
 
 ----------------------------------------------------------------
--- | Write a 'BL.ByteString' to an 'Fd'. The return value is a pair
--- of the total number of bytes written, and the remaining (unwritten)
--- input. This function makes one @write@ system call per chunk,
--- as per 'PosixBS.fdWrites'.
-fdWrites :: Fd -> BL.ByteString -> IO (ByteCount, BL.ByteString)
+-- | Write a 'BL.ByteString' to an 'Fd'. This function makes one
+-- @write(2)@ system call per chunk, as per 'PosixBS.fdWrites'.
+fdWrites
+    :: Fd
+    -> BL.ByteString
+        -- ^ The string to write.
+    -> IO (ByteCount, BL.ByteString)
+        -- ^ How many bytes were actually written, and the remaining
+        -- (unwritten) string.
 fdWrites fd = go 0
     where
     -- We want to do a left fold in order to avoid stack overflows,
@@ -86,6 +91,19 @@ _negtiveByteCount =
 _impossibleByteCount =
     "System.Posix.IO.fdWriteBuf: returned a byte count greater than the length it was given"
 -}
+
+
+----------------------------------------------------------------
+-- | Write a 'BL.ByteString' to an 'Fd'. This function makes a
+-- single @writev(2)@ system call, as per 'PosixBS.fdWritev'.
+fdWritev
+    :: Fd
+    -> BL.ByteString -- ^ The string to write.
+    -> IO ByteCount  -- ^ How many bytes were actually written.
+fdWritev fd s = PosixBS.fdWritev fd (BL.toChunks s)
+{-# INLINE fdWritev #-}
+-- Hopefully the intermediate list can be fused away...
+
 
 ----------------------------------------------------------------
 ----------------------------------------------------------- fin.
