@@ -141,7 +141,7 @@ foreign import ccall safe "writev"
 
 
 -- | Write data from memory to an 'Fd'. This is exactly equivalent
--- to the XPG4.2 @writev(2)@ function.
+-- to the XPG4.2 @writev(2)@ system call.
 fdWritevBuf :: Fd -> Ptr CIovec -> CInt -> IO ByteCount
 fdWritevBuf _  _   0   = return 0
 fdWritevBuf fd buf len =
