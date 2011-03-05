@@ -1,3 +1,6 @@
+0.2.1 (2011-03-05):
+    - Corrected the specifications (writev etc is XPG4.2, not POSIX)
+    - Added some extra #includes for legacy reasons
 0.2.0.1 (2011-03-05):
     - Changed stability to experimental.
 0.2.0 (2011-03-05):

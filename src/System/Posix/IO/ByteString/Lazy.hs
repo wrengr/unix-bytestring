@@ -1,14 +1,14 @@
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 {-# LANGUAGE BangPatterns #-}
 ----------------------------------------------------------------
---                                                    2011.03.04
+--                                                    2011.03.05
 -- |
 -- Module      :  System.Posix.IO.ByteString.Lazy
 -- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
 -- Stability   :  experimental
--- Portability :  non-portable (requires POSIX)
+-- Portability :  non-portable (requires POSIX.1, XPG4.2)
 --
 -- Provides lazy 'BL.ByteString' versions of the "System.Posix.IO"
 -- file-descriptor based I\/O API.

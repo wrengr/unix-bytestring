@@ -1,14 +1,14 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2011.03.04
+--                                                    2011.03.05
 -- |
 -- Module      :  System.Posix.Types.Iovec
 -- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
 -- Stability   :  experimental
--- Portability :  non-portable (requires POSIX)
+-- Portability :  non-portable (requires POSIX.1, XPG4.2)
 --
 -- Provides strict 'BS.ByteString' versions of the "System.Posix.IO"
 -- file-descriptor based I\/O API.
@@ -33,10 +33,13 @@ import qualified Foreign.ForeignPtr       as FFP
 import           Foreign.C.Types          (CSize)
 import           Foreign.Storable         (Storable(..))
 
-----------------------------------------------------------------
--- For struct iovec, writev, readv
+-- iovec, writev, and readv are in sys/uio, but we must include the
+-- others for legacy reasons.
+#include <sys/types.h>
 #include <sys/uio.h>
+#include <unistd.h>
 
+----------------------------------------------------------------
 
 -- | Haskell type representing the C @struct iovec@ type. This is
 -- exactly like 'Foreign.C.String.CStringLen' except there's actually

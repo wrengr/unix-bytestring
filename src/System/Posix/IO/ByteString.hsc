@@ -1,14 +1,14 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -Wall -fwarn-tabs -fno-warn-unused-binds #-}
 ----------------------------------------------------------------
---                                                    2011.03.04
+--                                                    2011.03.05
 -- |
 -- Module      :  System.Posix.IO.ByteString
 -- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
 -- Stability   :  experimental
--- Portability :  non-portable (requires POSIX)
+-- Portability :  non-portable (requires POSIX.1, XPG4.2)
 --
 -- Provides strict 'BS.ByteString' versions of the "System.Posix.IO"
 -- file-descriptor based I\/O API.
@@ -37,6 +37,12 @@ import qualified Foreign.Ptr              as FFI (castPtr)
 import qualified Foreign.Marshal.Array    as FMA
 import           Foreign.C.Types          (CInt, CSize)
 import qualified Foreign.C.Error          as FFI (throwErrnoIfMinus1Retry)
+
+-- iovec, writev, and readv are in sys/uio, but we must include the
+-- others for legacy reasons.
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <unistd.h>
 
 ----------------------------------------------------------------
 -- | Read data from an 'Fd' and convert it to a 'BS.ByteString'.
@@ -128,8 +134,6 @@ fdWrites fd = go 0
 
 
 ----------------------------------------------------------------
--- For struct iovec, writev, readv
-#include <sys/uio.h>
 
 foreign import ccall safe "writev"
 -- ssize_t writev(int fildes, const struct iovec *iov, int iovcnt);
@@ -137,7 +141,7 @@ foreign import ccall safe "writev"
 
 
 -- | Write data from memory to an 'Fd'. This is exactly equivalent
--- to the POSIX @writev(2)@ function.
+-- to the XPG4.2 @writev(2)@ function.
 fdWritevBuf :: Fd -> Ptr CIovec -> CInt -> IO ByteCount
 fdWritevBuf _  _   0   = return 0
 fdWritevBuf fd buf len =
