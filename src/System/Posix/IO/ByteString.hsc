@@ -16,8 +16,10 @@
 module System.Posix.IO.ByteString
     (
     -- * I\/O with file descriptors
+    -- ** Reading
       fdRead
     , fdReads
+    -- ** Writing
     , fdWrite
     , fdWrites
     , fdWritev
@@ -39,8 +41,8 @@ import qualified Foreign.Marshal.Array    as FMA
 import           Foreign.C.Types          (CInt, CSize)
 import qualified Foreign.C.Error          as FFI (throwErrnoIfMinus1Retry)
 
--- iovec, writev, and readv are in sys/uio, but we must include the
--- others for legacy reasons.
+-- iovec, writev, and readv are in <sys/uio.h>, but we must include
+-- <sys/types.h> and <unistd.h> for legacy reasons.
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
@@ -106,7 +108,7 @@ fdRead fd n = do
 -- >     retry _ n = Just $! n-1
 --
 -- The benefit of doing this instead of the naive approach of calling
--- 'fdRead' repeatedly is that we can avoid concatenating myltiple
+-- 'fdRead' repeatedly is that we can avoid concatenating multiple
 -- @ByteString@s.
 fdReads
     :: (ByteCount -> a -> Maybe a) -- ^ A stateful predicate for retrying.

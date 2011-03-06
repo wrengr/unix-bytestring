@@ -6,7 +6,8 @@ Name:           unix-bytestring
 Version:        0.2.1
 -- Source-Repository requires version 1.6
 Cabal-Version:  >= 1.6
-Build-Type:     Simple
+-- We need a custom build in order to define __HADDOCK__
+Build-Type:     Custom
 Stability:      experimental
 Copyright:      Copyright (c) 2010--2011 wren ng thornton
 License:        BSD3

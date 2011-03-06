@@ -1,4 +1,5 @@
-0.2.1 (2011-XX-XX):
+0.2.1 (2011-03-06):
+    - Added a custom build in order to define __HADDOCK__ when appropriate.
     - System.Posix.IO.ByteString: added fdReads
 0.2.0 (2011-03-05):
     - Corrected the specifications (writev etc is XPG4.2, not POSIX)

@@ -1,7 +1,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2011.03.05
+--                                                    2011.03.06
 -- |
 -- Module      :  System.Posix.Types.Iovec
 -- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
@@ -33,8 +33,14 @@ import qualified Foreign.ForeignPtr       as FFP
 import           Foreign.C.Types          (CSize)
 import           Foreign.Storable         (Storable(..))
 
--- iovec, writev, and readv are in sys/uio, but we must include the
--- others for legacy reasons.
+-- N.B., we need a Custom cabal build-type in order for this to
+-- work.
+#ifdef __HADDOCK__
+import Foreign.C.String (CStringLen)
+#endif
+
+-- iovec, writev, and readv are in <sys/uio.h>, but we must include
+-- <sys/types.h> and <unistd.h> for legacy reasons.
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
@@ -42,8 +48,8 @@ import           Foreign.Storable         (Storable(..))
 ----------------------------------------------------------------
 
 -- | Haskell type representing the C @struct iovec@ type. This is
--- exactly like 'Foreign.C.String.CStringLen' except there's actually
--- struct definition on the C side.
+-- exactly like @'CStringLen'@ except there's actually struct
+-- definition on the C side.
 data CIovec = CIovec
     { iov_base :: {-# UNPACK #-} !(Ptr Word8) -- char* or void*
     , iov_len  :: {-# UNPACK #-} !CSize       -- size_t

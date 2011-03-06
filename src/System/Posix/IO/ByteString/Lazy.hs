@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 {-# LANGUAGE BangPatterns #-}
 ----------------------------------------------------------------
---                                                    2011.03.05
+--                                                    2011.03.06
 -- |
 -- Module      :  System.Posix.IO.ByteString.Lazy
 -- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
@@ -16,7 +16,9 @@
 module System.Posix.IO.ByteString.Lazy
     (
     -- * I\/O with file descriptors
+    -- ** Reading
       fdRead
+    -- ** Writing
     , fdWrites
     , fdWritev
     ) where
