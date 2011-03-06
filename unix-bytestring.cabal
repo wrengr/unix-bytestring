@@ -1,9 +1,9 @@
 ----------------------------------------------------------------
--- wren ng thornton <wren@community.haskell.org>    ~ 2011.03.05
+-- wren ng thornton <wren@community.haskell.org>    ~ 2011.03.06
 ----------------------------------------------------------------
 
 Name:           unix-bytestring
-Version:        0.2.0
+Version:        0.2.1
 -- Source-Repository requires version 1.6
 Cabal-Version:  >= 1.6
 Build-Type:     Simple

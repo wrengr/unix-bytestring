@@ -1,7 +1,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -Wall -fwarn-tabs -fno-warn-unused-binds #-}
 ----------------------------------------------------------------
---                                                    2011.03.05
+--                                                    2011.03.06
 -- |
 -- Module      :  System.Posix.IO.ByteString
 -- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
@@ -17,6 +17,7 @@ module System.Posix.IO.ByteString
     (
     -- * I\/O with file descriptors
       fdRead
+    , fdReads
     , fdWrite
     , fdWrites
     , fdWritev
@@ -33,7 +34,7 @@ import qualified System.Posix.IO          as Posix
 import qualified System.IO.Error          as IOE
 
 import           Foreign.Ptr              (Ptr)
-import qualified Foreign.Ptr              as FFI (castPtr)
+import qualified Foreign.Ptr              as FFI (castPtr, plusPtr)
 import qualified Foreign.Marshal.Array    as FMA
 import           Foreign.C.Types          (CInt, CSize)
 import qualified Foreign.C.Error          as FFI (throwErrnoIfMinus1Retry)
@@ -45,6 +46,16 @@ import qualified Foreign.C.Error          as FFI (throwErrnoIfMinus1Retry)
 #include <unistd.h>
 
 ----------------------------------------------------------------
+
+-- | Throw an 'IOE.IOError' for EOF.
+ioErrorEOF :: String -> IO a
+ioErrorEOF fun =
+    IOE.ioError
+        (IOE.ioeSetErrorString
+            (IOE.mkIOError IOE.eofErrorType fun Nothing Nothing)
+            "EOF")
+
+
 -- | Read data from an 'Fd' and convert it to a 'BS.ByteString'.
 -- Throws an exception if this is an invalid descriptor, or EOF has
 -- been reached.
@@ -59,21 +70,65 @@ fdRead fd n = do
     s <- BSI.createAndTrim (fromIntegral n) $ \buf -> do
         rc <- Posix.fdReadBuf fd buf n
         if 0 == rc
-            then IOE.ioError
-                (IOE.ioeSetErrorString
-                    (IOE.mkIOError
-                        IOE.eofErrorType
-                        "System.Posix.IO.ByteString.fdRead"
-                        Nothing
-                        Nothing)
-                    "EOF")
+            then ioErrorEOF "System.Posix.IO.ByteString.fdRead"
             else return (fromIntegral rc)
     let rc = fromIntegral (BS.length s) in rc `seq` do
     return (s, rc)
 
+
 -- TODO: since it's /O(1)/ to get the length from the bytestring,
 -- and we do that anyways, would it be worthwhile to push that off
 -- onto clients and just return the bytestring alone?
+
+
+-- | Read data from an 'Fd' and convert it to a 'BS.ByteString'.
+-- Throws an exception if this is an invalid descriptor, or EOF has
+-- been reached.
+--
+-- This version takes a kind of stateful predicate for whether and
+-- how long to keep retrying. Assume the function is called as
+-- @fdReads f z0 fd n0@. We will attempt to read @n0@ bytes from
+-- @fd@. If we fall short, then we will call @f len z@ where @len@
+-- is the total number of bytes read so far and @z@ is the current
+-- state (initially @z0@). If it returns @Nothing@ then we will
+-- give up and return the current buffer; otherwise we will retry
+-- with the new state, continuing from where we left off.
+--
+-- For example, to define a function that tries up to @n@ times,
+-- we can use:
+--
+-- > fdReadUptoNTimes :: Int -> Fd -> ByteCount -> IO ByteString
+-- > fdReadUptoNTimes n0
+-- >     | n0 <= 0   = \_ _ -> return empty
+-- >     | otherwise = fdReads retry n0
+-- >     where
+-- >     retry _ 0 = Nothing
+-- >     retry _ n = Just $! n-1
+--
+-- The benefit of doing this instead of the naive approach of calling
+-- 'fdRead' repeatedly is that we can avoid concatenating myltiple
+-- @ByteString@s.
+fdReads
+    :: (ByteCount -> a -> Maybe a) -- ^ A stateful predicate for retrying.
+    -> a                           -- ^ An initial state for the predicate.
+    -> Fd
+    -> ByteCount                   -- ^ How many bytes to try to read.
+    -> IO BS.ByteString            -- ^ The bytes read.
+fdReads _ _  _  0  = return BS.empty
+fdReads f z0 fd n0 = BSI.createAndTrim (fromIntegral n0) (go z0 0 n0)
+    where
+    go _ len n buf | len `seq` n `seq` buf `seq` False = undefined
+    go z len n buf = do
+        rc <- Posix.fdReadBuf fd buf n
+        let len' = len + rc
+        case rc of
+          _ | rc == 0 -> ioErrorEOF "System.Posix.IO.ByteString.fdReads"
+            | rc == n -> return (fromIntegral len') -- Finished.
+            | otherwise ->
+                case f len' z of
+                Nothing -> return (fromIntegral len') -- Gave up.
+                Just z' ->
+                    go z' len' (n - rc) (buf `FFI.plusPtr` fromIntegral rc)
 
 
 ----------------------------------------------------------------
