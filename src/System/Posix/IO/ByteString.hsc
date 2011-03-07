@@ -61,7 +61,10 @@ ioErrorEOF fun =
 
 -- | Read data from an 'Fd' and convert it to a 'BS.ByteString'.
 -- Throws an exception if this is an invalid descriptor, or EOF has
--- been reached.
+-- been reached. This is essentially equivalent to the POSIX.1
+-- @read(2)@ system call; the difference is that we allocate a byte
+-- buffer for the @ByteString@, and then pass its underlying
+-- @Ptr Word8@ and @ByteCount@ components to 'Posix.fdReadBuf'.
 fdRead
     :: Fd
     -> ByteCount
