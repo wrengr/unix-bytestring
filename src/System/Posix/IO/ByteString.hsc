@@ -112,8 +112,11 @@ fdRead fd n = do
 -- >     retry _ n = Just $! n-1
 --
 -- The benefit of doing this instead of the naive approach of calling
--- 'fdRead' repeatedly is that we can avoid concatenating multiple
--- @ByteString@s.
+-- 'fdRead' repeatedly is that we only need to allocate one byte
+-- buffer, and trim it once at the end--- whereas the naive approach
+-- would allocate a buffer, trim it to the number of bytes read,
+-- and then concatenate with the previous one (another allocation,
+-- plus copying everything over) for each time around the loop.
 fdReads
     :: (ByteCount -> a -> Maybe a) -- ^ A stateful predicate for retrying.
     -> a                           -- ^ An initial state for the predicate.
