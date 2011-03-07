@@ -1,9 +1,9 @@
 ----------------------------------------------------------------
--- wren ng thornton <wren@community.haskell.org>    ~ 2011.03.06
+-- wren ng thornton <wren@community.haskell.org>    ~ 2011.03.07
 ----------------------------------------------------------------
 
 Name:           unix-bytestring
-Version:        0.2.1
+Version:        0.2.2
 -- Source-Repository requires version 1.6
 Cabal-Version:  >= 1.6
 -- We need a custom build in order to define __HADDOCK__

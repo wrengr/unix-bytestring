@@ -1,7 +1,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -Wall -fwarn-tabs -fno-warn-unused-binds #-}
 ----------------------------------------------------------------
---                                                    2011.03.06
+--                                                    2011.03.07
 -- |
 -- Module      :  System.Posix.IO.ByteString
 -- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
@@ -19,11 +19,12 @@ module System.Posix.IO.ByteString
     -- ** Reading
       fdRead
     , fdReads
+    , fdReadvBuf
     -- ** Writing
     , fdWrite
     , fdWrites
     , fdWritev
-    -- , fdWritevBuf
+    , fdWritevBuf
     ) where
 
 import qualified Data.ByteString          as BS
@@ -134,6 +135,24 @@ fdReads f z0 fd n0 = BSI.createAndTrim (fromIntegral n0) (go z0 0 n0)
 
 
 ----------------------------------------------------------------
+foreign import ccall safe "readv"
+-- ssize_t readv(int fildes, const struct iovec *iov, int iovcnt);
+    c_safe_readv :: CInt -> Ptr CIovec -> CInt -> IO CSize
+
+
+-- | Read data from an 'Fd' and scatter it into memory. This is
+-- exactly equivalent to the XPG4.2 @readv(2)@ system call.
+--
+-- TODO: better documentation.
+fdReadvBuf :: Fd -> Ptr CIovec -> CInt -> IO ByteCount
+fdReadvBuf _  _   0   = return 0
+fdReadvBuf fd buf len =
+    fmap fromIntegral $
+        FFI.throwErrnoIfMinus1Retry "fdReadvBuf" $
+            c_safe_readv (fromIntegral fd) buf len
+
+
+----------------------------------------------------------------
 -- | Write a 'BS.ByteString' to an 'Fd'. The return value is the
 -- total number of bytes actually written. This is exactly equivalent
 -- to the POSIX @write(2)@ system call; we just convert the
@@ -199,6 +218,8 @@ foreign import ccall safe "writev"
 
 -- | Write data from memory to an 'Fd'. This is exactly equivalent
 -- to the XPG4.2 @writev(2)@ system call.
+--
+-- TODO: better documentation.
 fdWritevBuf :: Fd -> Ptr CIovec -> CInt -> IO ByteCount
 fdWritevBuf _  _   0   = return 0
 fdWritevBuf fd buf len =

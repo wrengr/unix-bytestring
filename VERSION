@@ -1,3 +1,5 @@
+0.2.2 (2011-XX-XX):
+    - System.Posix.IO.ByteString: added fdReadvBuf, exposed fdWritevBuf
 0.2.1 (2011-03-06):
     - Added a custom build in order to define __HADDOCK__ when appropriate.
     - System.Posix.IO.ByteString: added fdReads
