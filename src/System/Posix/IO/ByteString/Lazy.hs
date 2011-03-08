@@ -38,7 +38,7 @@ fdRead
     :: Fd
     -> ByteCount        -- ^ How many bytes to try to read.
     -> IO BL.ByteString -- ^ The bytes read.
-fdRead _  0 = return (BL.empty, 0)
+fdRead _  0 = return BL.empty
 fdRead fd n = do
     s <- PosixBS.fdRead fd n
     return (BLI.chunk s BL.empty)

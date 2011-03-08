@@ -7,7 +7,7 @@ in this file--- but, with CPP we get an error from our includes on
 OSX 10.5.8 about "architecture not supported" (even though the
 includes worked fine with hsc2hs before we added the Cabal macros).
 -}
-{-# LANGUAGE CPP, ForeignFunctionInterface #-}
+{-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
 --                                                    2011.03.07
@@ -54,23 +54,27 @@ module System.Posix.IO.ByteString
     , fdPwriteBuf
     ) where
 
+import           Data.Word                (Word8)
 import qualified Data.ByteString          as BS
 import qualified Data.ByteString.Internal as BSI
 import qualified Data.ByteString.Unsafe   as BSU
 
-import           System.Posix.Types.Iovec
-import           System.Posix.Types       (Fd, ByteCount, FileOffset)
+import qualified System.IO.Error          as IOE
+{-
 -- /N.B./, hsc2hs doesn't like this...
 #if (MIN_VERSION_unix(2,4,0))
 import           System.Posix.IO          (fdReadBuf, fdWriteBuf)
 #endif
-import qualified System.IO.Error          as IOE
-
+-}
+import           System.Posix.IO          (fdReadBuf, fdWriteBuf)
+import           System.Posix.Types.Iovec
+import           System.Posix.Types       (Fd, ByteCount, FileOffset
+                                          , CSsize, COff)
+import           Foreign.C.Types          (CInt, CSize)
+import qualified Foreign.C.Error          as FFI (throwErrnoIfMinus1Retry)
 import           Foreign.Ptr              (Ptr)
 import qualified Foreign.Ptr              as FFI (castPtr, plusPtr)
 import qualified Foreign.Marshal.Array    as FMA (withArrayLen)
-import           Foreign.C.Types          (CInt, CSize, CSsize)
-import qualified Foreign.C.Error          as FFI (throwErrnoIfMinus1Retry)
 
 -- iovec, writev, and readv are in <sys/uio.h>, but we must include
 -- <sys/types.h> and <unistd.h> for legacy reasons.
@@ -89,6 +93,7 @@ ioErrorEOF fun =
 
 
 ----------------------------------------------------------------
+{-
 -- /N.B./, hsc2hs doesn't like this...
 #if ! (MIN_VERSION_unix(2,4,0))
 -- This version was copied from unix-2.4.2.0
@@ -115,6 +120,7 @@ foreign import ccall safe "read"
     -- ssize_t read(int fildes, void *buf, size_t nbyte);
     c_safe_read :: CInt -> Ptr CChar -> CSize -> IO CSsize
 #endif
+-}
 
 
 ----------------------------------------------------------------
@@ -241,7 +247,7 @@ fdPreadBuf fd buf nbytes offset =
 
 foreign import ccall safe "pread"
     -- ssize_t pread(int fildes, void *buf, size_t nbyte, off_t offset);
-    c_safe_pread :: CInt -> Ptr Word8 -> CSize -> _ -> IO CSsize
+    c_safe_pread :: CInt -> Ptr Word8 -> CSize -> COff -> IO CSsize
 
 
 ----------------------------------------------------------------
@@ -270,6 +276,7 @@ fdPread fd n offset =
 
 ----------------------------------------------------------------
 ----------------------------------------------------------------
+{-
 -- /N.B./, hsc2hs doesn't like this...
 #if ! (MIN_VERSION_unix(2,4,0))
 -- This version was copied from unix-2.4.2.0
@@ -295,6 +302,7 @@ foreign import ccall safe "write"
     -- ssize_t write(int fildes, const void *buf, size_t nbyte);
     c_safe_write :: CInt -> Ptr CChar -> CSize -> IO CSsize
 #endif
+-}
 
 
 ----------------------------------------------------------------
@@ -423,7 +431,7 @@ fdPwriteBuf fd buf nbytes offset =
 
 foreign import ccall safe "pwrite"
     -- ssize_t pwrite(int fildes, const void *buf, size_t nbyte, off_t offset);
-    c_safe_pwrite :: CInt -> Ptr Word8 -> CSize -> _ -> IO CSsize
+    c_safe_pwrite :: CInt -> Ptr Word8 -> CSize -> COff -> IO CSsize
 
 
 ----------------------------------------------------------------
