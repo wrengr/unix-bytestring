@@ -36,14 +36,12 @@ import           System.Posix.Types            (Fd, ByteCount)
 -- been reached.
 fdRead
     :: Fd
-    -> ByteCount
-        -- ^ How many bytes to try to read.
-    -> IO (BL.ByteString, ByteCount)
-        -- ^ The bytes read, and how many bytes were actually read.
+    -> ByteCount        -- ^ How many bytes to try to read.
+    -> IO BL.ByteString -- ^ The bytes read.
 fdRead _  0 = return (BL.empty, 0)
 fdRead fd n = do
-    (s,n') <- PosixBS.fdRead fd n
-    return (BLI.chunk s BL.empty, n')
+    s <- PosixBS.fdRead fd n
+    return (BLI.chunk s BL.empty)
 
 
 ----------------------------------------------------------------
