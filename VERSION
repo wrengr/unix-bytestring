@@ -1,4 +1,4 @@
-0.3.0 (2011-XX-XX):
+0.3.0 (2011-03-07):
     - System.Posix.IO.ByteString: added fdReadvBuf, exposed fdWritevBuf
     - System.Posix.IO.ByteString: added fdReadBuf and fdWriteBuf for compatibility with older versions of the @unix@ package
     - System.Posix.IO.ByteString: added fdPread, fdPreadBuf

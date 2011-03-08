@@ -30,26 +30,26 @@ module System.Posix.IO.ByteString
     (
     -- * I\/O with file descriptors
     -- ** Reading
-    -- *** The POSIX.1 @read(2)@ system call
+    -- *** The POSIX.1 @read(2)@ syscall
       fdRead
     , fdReadBuf
     , fdReads
-    -- *** The XPG4.2 @readv(2)@ system call
+    -- *** The XPG4.2 @readv(2)@ syscall
     -- , fdReadv
     , fdReadvBuf
-    -- *** The XPG4.2 @pread(2)@ system call
+    -- *** The XPG4.2 @pread(2)@ syscall
     , fdPread
     , fdPreadBuf
     
     -- ** Writing
-    -- *** The POSIX.1 @write(2)@ system call
+    -- *** The POSIX.1 @write(2)@ syscall
     , fdWrite
     , fdWriteBuf
     , fdWrites
-    -- *** The XPG4.2 @writev(2)@ system call
+    -- *** The XPG4.2 @writev(2)@ syscall
     , fdWritev
     , fdWritevBuf
-    -- *** The XPG4.2 @pwrite(2)@ system call
+    -- *** The XPG4.2 @pwrite(2)@ syscall
     , fdPwrite
     , fdPwriteBuf
     ) where
@@ -258,7 +258,7 @@ foreign import ccall safe "pread"
 -- This is essentially equivalent to the XPG4.2 @pread(2)@ system
 -- call; the differences are that we allocate a byte buffer for the
 -- @ByteString@ (and then pass its underlying @Ptr Word8@ and
--- @ByteCount@ components to 'fdReadBuf'), and that we detect EOF
+-- @ByteCount@ components to 'fdPreadBuf'), and that we detect EOF
 -- and throw an 'IOE.IOError'.
 fdPread
     :: Fd
