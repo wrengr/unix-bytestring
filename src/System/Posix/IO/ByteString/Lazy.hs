@@ -1,5 +1,4 @@
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
-{-# LANGUAGE BangPatterns #-}
 ----------------------------------------------------------------
 --                                                    2011.03.06
 -- |
@@ -62,8 +61,8 @@ fdWrites fd = go 0
     go acc BLI.Empty        = return (acc, BL.empty)
     go acc (BLI.Chunk c cs) = do
         rc <- PosixBS.fdWrite fd c
-        let !acc'  = acc+rc
-            !rcInt = fromIntegral rc
+        let acc'  = acc+rc          in acc'  `seq` do
+        let rcInt = fromIntegral rc in rcInt `seq` do
         if rcInt == BS.length c
             then go acc' cs
             else return (acc', BLI.Chunk (BSU.unsafeDrop rcInt c) cs)
@@ -77,8 +76,8 @@ If we are paranoid about that then we should do the following instead:
         BLI.Empty      -> return (acc, ccs)
         BLI.Chunk c cs -> do
             rc <- PosixBS.fdWrite fd c
-            let !acc'  = acc+rc
-                !rcInt = fromIntegral rc
+            let acc'  = acc+rc          in acc'  `seq` do
+            let rcInt = fromIntegral rc in rcInt `seq` do
             case BS.length c of
                 len | rcInt == len -> go acc' cs
                     | rcInt >  len -> error _impossibleByteCount
