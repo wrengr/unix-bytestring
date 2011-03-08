@@ -1,3 +1,5 @@
+0.3.1 (2011-XX-XX):
+    - System.Posix.IO.ByteString.Lazy: added fdPread
 0.3.0 (2011-03-07):
     - System.Posix.IO.ByteString: added fdReadvBuf, exposed fdWritevBuf
     - System.Posix.IO.ByteString: added fdReadBuf and fdWriteBuf for compatibility with older versions of the @unix@ package

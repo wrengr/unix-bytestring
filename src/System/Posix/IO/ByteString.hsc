@@ -252,8 +252,9 @@ foreign import ccall safe "pread"
 
 ----------------------------------------------------------------
 -- | Read data from a specified position in the 'Fd' and convert
--- it to a 'BS.ByteString'. Throws an exception if this is an invalid
--- descriptor, or EOF has been reached.
+-- it to a 'BS.ByteString', without altering the position stored
+-- in the @Fd@. Throws an exception if this is an invalid descriptor,
+-- or EOF has been reached.
 --
 -- This is essentially equivalent to the XPG4.2 @pread(2)@ system
 -- call; the differences are that we allocate a byte buffer for the

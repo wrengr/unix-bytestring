@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2011.03.06
+--                                                    2011.03.07
 -- |
 -- Module      :  System.Posix.IO.ByteString.Lazy
 -- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
@@ -17,6 +17,7 @@ module System.Posix.IO.ByteString.Lazy
     -- * I\/O with file descriptors
     -- ** Reading
       fdRead
+    , fdPread
     -- ** Writing
     , fdWrites
     , fdWritev
@@ -27,12 +28,12 @@ import qualified Data.ByteString.Unsafe        as BSU
 import qualified System.Posix.IO.ByteString    as PosixBS
 import qualified Data.ByteString.Lazy          as BL
 import qualified Data.ByteString.Lazy.Internal as BLI
-import           System.Posix.Types            (Fd, ByteCount)
+import           System.Posix.Types            (Fd, ByteCount, FileOffset)
 
 ----------------------------------------------------------------
 -- | Read data from an 'Fd' and convert it to a 'BL.ByteString'.
 -- Throws an exception if this is an invalid descriptor, or EOF has
--- been reached.
+-- been reached. This is a thin wrapper around 'PosixBS.fdRead'.
 fdRead
     :: Fd
     -> ByteCount        -- ^ How many bytes to try to read.
@@ -40,6 +41,22 @@ fdRead
 fdRead _  0 = return BL.empty
 fdRead fd n = do
     s <- PosixBS.fdRead fd n
+    return (BLI.chunk s BL.empty)
+
+----------------------------------------------------------------
+-- | Read data from a specified position in the 'Fd' and convert
+-- it to a 'BS.ByteString', without altering the position stored
+-- in the @Fd@. Throws an exception if this is an invalid descriptor,
+-- or EOF has been reached. This is a thin wrapper around
+-- 'PosixBS.fdPread'.
+fdPread
+    :: Fd
+    -> ByteCount        -- ^ How many bytes to try to read.
+    -> FileOffset       -- ^ Where to read the data from.
+    -> IO BL.ByteString -- ^ The bytes read.
+fdPread _  0 _      = return BL.empty
+fdPread fd n offset = do
+    s <- PosixBS.fdPread fd n offset
     return (BLI.chunk s BL.empty)
 
 
