@@ -40,6 +40,7 @@ module System.Posix.IO.ByteString
     -- *** The XPG4.2 @pread(2)@ syscall
     , fdPread
     , fdPreadBuf
+    , fdPreads
     
     -- ** Writing
     -- *** The POSIX.1 @write(2)@ syscall
@@ -222,6 +223,8 @@ foreign import ccall safe "readv"
     c_safe_readv :: CInt -> Ptr CIovec -> CInt -> IO CSsize
 
 
+-- TODO: What's a reasonable wrapper for fdReadvBuf to make it Haskellish?
+
 ----------------------------------------------------------------
 -- | Read data from a specified position in the 'Fd' into memory,
 -- without altering the position stored in the @Fd@. This is exactly
@@ -274,6 +277,34 @@ fdPread fd n offset =
             then ioErrorEOF "System.Posix.IO.ByteString.fdPread"
             else return (fromIntegral rc)
 
+----------------------------------------------------------------
+-- | Read data from a specified position in the 'Fd' and convert
+-- it to a 'BS.ByteString', without altering the position stored
+-- in the @Fd@. Throws an exception if this is an invalid descriptor,
+-- or EOF has been reached. This is a @pread(2)@ based version of
+-- 'fdReads'; see that function for more details.
+fdPreads
+    :: (ByteCount -> a -> Maybe a) -- ^ A stateful predicate for retrying.
+    -> a                           -- ^ An initial state for the predicate.
+    -> Fd
+    -> ByteCount                   -- ^ How many bytes to try to read.
+    -> FileOffset                  -- ^ Where to read the data from.
+    -> IO BS.ByteString            -- ^ The bytes read.
+fdPreads _ _  _  0  _      = return BS.empty
+fdPreads f z0 fd n0 offset = BSI.createAndTrim (fromIntegral n0) (go z0 0 n0)
+    where
+    go _ len n buf | len `seq` n `seq` buf `seq` False = undefined
+    go z len n buf = do
+        rc <- fdPreadBuf fd buf n (offset + fromIntegral len)
+        let len' = len + rc
+        case rc of
+          _ | rc == 0 -> ioErrorEOF "System.Posix.IO.ByteString.fdPreads"
+            | rc == n -> return (fromIntegral len') -- Finished.
+            | otherwise ->
+                case f len' z of
+                Nothing -> return (fromIntegral len') -- Gave up.
+                Just z' ->
+                    go z' len' (n - rc) (buf `FFI.plusPtr` fromIntegral rc)
 
 ----------------------------------------------------------------
 ----------------------------------------------------------------
