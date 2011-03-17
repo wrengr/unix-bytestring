@@ -1,11 +1,12 @@
 {-
-BUG: We're trying to use Cabal-style MIN_VERSION_foo(1,2,3) macros
-in order to offer backwards compatibility with older versions of
-the unix package. But, hsc2hs doesn't like those macros and gives
-syntax errors. That's okay because we don't /need/ hsc2hs functionality
-in this file--- but, with CPP we get an error from our includes on
+/N.B./, There's a bug when trying to use Cabal-style MIN_VERSION_foo(1,2,3)
+macros in combination with hsc2hs. We don't need full hsc2hs support
+in this file, but if we use CPP instead we get a strange error on
 OSX 10.5.8 about "architecture not supported" (even though the
-includes worked fine with hsc2hs before we added the Cabal macros).
+headers work fine with hsc2hs). It turns out that we don't /need/
+to combine Cabal-style macros and hsc2hs\/cpp since we can remove
+our dependency on the @unix@ package. But this issue is worth making
+a note of.
 -}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
@@ -67,11 +68,10 @@ import qualified System.IO.Error          as IOE
 import           System.Posix.IO          (fdReadBuf, fdWriteBuf)
 #endif
 -}
-import           System.Posix.IO          (fdReadBuf, fdWriteBuf)
 import           System.Posix.Types.Iovec
 import           System.Posix.Types       (Fd, ByteCount, FileOffset
                                           , CSsize, COff)
-import           Foreign.C.Types          (CInt, CSize)
+import           Foreign.C.Types          (CInt, CSize, CChar)
 import qualified Foreign.C.Error          as FFI (throwErrnoIfMinus1Retry)
 import           Foreign.Ptr              (Ptr)
 import qualified Foreign.Ptr              as FFI (castPtr, plusPtr)
@@ -94,9 +94,8 @@ ioErrorEOF fun =
 
 
 ----------------------------------------------------------------
-{-
 -- /N.B./, hsc2hs doesn't like this...
-#if ! (MIN_VERSION_unix(2,4,0))
+-- #if ! (MIN_VERSION_unix(2,4,0))
 -- This version was copied from unix-2.4.2.0
 -- | Read data from an 'Fd' into memory. This is exactly equivalent
 -- to the POSIX.1 @read(2)@ system call.
@@ -120,8 +119,7 @@ fdReadBuf fd buf nbytes =
 foreign import ccall safe "read"
     -- ssize_t read(int fildes, void *buf, size_t nbyte);
     c_safe_read :: CInt -> Ptr CChar -> CSize -> IO CSsize
-#endif
--}
+-- #endif
 
 
 ----------------------------------------------------------------
@@ -308,9 +306,8 @@ fdPreads f z0 fd n0 offset = BSI.createAndTrim (fromIntegral n0) (go z0 0 n0)
 
 ----------------------------------------------------------------
 ----------------------------------------------------------------
-{-
 -- /N.B./, hsc2hs doesn't like this...
-#if ! (MIN_VERSION_unix(2,4,0))
+-- #if ! (MIN_VERSION_unix(2,4,0))
 -- This version was copied from unix-2.4.2.0
 -- | Write data from memory to an 'Fd'. This is exactly equivalent
 -- to the POSIX.1 @write(2)@ system call.
@@ -333,8 +330,7 @@ fdWriteBuf fd buf nbytes =
 foreign import ccall safe "write" 
     -- ssize_t write(int fildes, const void *buf, size_t nbyte);
     c_safe_write :: CInt -> Ptr CChar -> CSize -> IO CSsize
-#endif
--}
+-- #endif
 
 
 ----------------------------------------------------------------

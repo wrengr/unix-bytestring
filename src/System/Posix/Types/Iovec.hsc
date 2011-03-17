@@ -26,7 +26,6 @@ module System.Posix.Types.Iovec
 import           Data.Word                (Word8)
 import qualified Data.ByteString          as BS
 import qualified Data.ByteString.Internal as BSI
-
 import           Foreign.Ptr              (Ptr)
 import qualified Foreign.Ptr              as FFI (castPtr, plusPtr)
 import qualified Foreign.ForeignPtr       as FFP
