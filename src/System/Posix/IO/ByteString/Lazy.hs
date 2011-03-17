@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2011.03.07
+--                                                    2011.03.17
 -- |
 -- Module      :  System.Posix.IO.ByteString.Lazy
 -- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
@@ -9,8 +9,16 @@
 -- Stability   :  experimental
 -- Portability :  non-portable (requires POSIX.1, XPG4.2)
 --
--- Provides lazy 'BL.ByteString' versions of the "System.Posix.IO"
--- file-descriptor based I\/O API.
+-- Provides a lazy-'BL.ByteString' file-descriptor based I\/O
+-- API, designed loosely after the @String@ file-descriptor based
+-- I\/O API in "System.Posix.IO". The functions here wrap standard
+-- C implementations of the functions specified by the ISO\/IEC
+-- 9945-1:1990 (``POSIX.1'') and X\/Open Portability Guide Issue
+-- 4, Version 2 (``XPG4.2'') specifications.
+--
+-- These functions are provided mainly as a convenience to avoid
+-- boilerplate code converting between lazy 'BL.ByteString' and
+-- strict @['BS.ByteString']@. It may be depricated in the future.
 ----------------------------------------------------------------
 module System.Posix.IO.ByteString.Lazy
     (

@@ -1,1 +1,6 @@
-* Try to get this package folded into "unix"
+* Combine the test suite into a single executable and then do:
+    $> darcs setpref test "runhaskell Tests.hs"
+
+* Make the package public and get feedback to solidify the API.
+
+* Try to get the newest/final version of this package folded into "unix".

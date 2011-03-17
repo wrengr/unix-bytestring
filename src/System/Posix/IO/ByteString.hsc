@@ -10,14 +10,14 @@ includes worked fine with hsc2hs before we added the Cabal macros).
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2011.03.07
+--                                                    2011.03.17
 -- |
 -- Module      :  System.Posix.IO.ByteString
 -- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
 -- Stability   :  experimental
--- Portability :  non-portable (requires POSIX.1, XPG4.2)
+-- Portability :  non-portable (POSIX.1, XPG4.2; hsc2hs, FFI)
 --
 -- Provides a strict-'BS.ByteString' file-descriptor based I\/O
 -- API, designed loosely after the @String@ file-descriptor based

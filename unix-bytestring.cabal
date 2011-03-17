@@ -1,9 +1,9 @@
 ----------------------------------------------------------------
--- wren ng thornton <wren@community.haskell.org>    ~ 2011.03.07
+-- wren ng thornton <wren@community.haskell.org>    ~ 2011.03.17
 ----------------------------------------------------------------
 
 Name:           unix-bytestring
-Version:        0.3.1
+Version:        0.3.1.1
 -- Source-Repository requires version 1.6
 Cabal-Version:  >= 1.6
 -- We need a custom build in order to define __HADDOCK__
@@ -26,6 +26,7 @@ Description:    Unix\/Posix-specific functions for ByteStrings.
     and X\/Open Portability Guide Issue 4, Version 2 (``XPG4.2'')
     specifications.
 
+Tested-With:    GHC == 6.12.1, GHC == 6.12.3
 Source-Repository head
     Type:     darcs
     Location: http://community.haskell.org/~wren/unix-bytestring
@@ -37,7 +38,8 @@ Library
                    , System.Posix.IO.ByteString.Lazy
                    , System.Posix.Types.Iovec
 
-    -- TODO: actually we don't require unix>=2.4 anymore. Find the real lower bound.
+    -- TODO: actually we don't require unix>=2.4 anymore. Find the
+    -- real lower bound, if any.
     --
     -- We require base>=4.1 for Foreign.C.Error.throwErrnoIfMinus1Retry.
     -- We require unix>=2.4 for System.Posix.IO.fdReadBuf/fdWriteBuf,
