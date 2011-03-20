@@ -1,3 +1,6 @@
+0.3.2.1 (2011-03-20):
+	- Changed the cabal category label to System
+	- Uploaded to Hackage
 0.3.2 (2011-03-17):
     - Removed the dependency on @unix@.
 0.3.1 (2011-03-07):
