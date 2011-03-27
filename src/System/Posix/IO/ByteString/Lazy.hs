@@ -46,10 +46,11 @@ fdRead
     :: Fd
     -> ByteCount        -- ^ How many bytes to try to read.
     -> IO BL.ByteString -- ^ The bytes read.
-fdRead _  0 = return BL.empty
-fdRead fd n = do
-    s <- PosixBS.fdRead fd n
-    return (BLI.chunk s BL.empty)
+fdRead fd nbytes
+    | nbytes <= 0 = return BL.empty
+    | otherwise   = do
+        s <- PosixBS.fdRead fd nbytes
+        return (BLI.chunk s BL.empty)
 
 ----------------------------------------------------------------
 -- | Read data from a specified position in the 'Fd' and convert
@@ -64,10 +65,11 @@ fdPread
     -> ByteCount        -- ^ How many bytes to try to read.
     -> FileOffset       -- ^ Where to read the data from.
     -> IO BL.ByteString -- ^ The bytes read.
-fdPread _  0 _      = return BL.empty
-fdPread fd n offset = do
-    s <- PosixBS.fdPread fd n offset
-    return (BLI.chunk s BL.empty)
+fdPread fd nbytes offset
+    | nbytes <= 0 = return BL.empty
+    | otherwise   = do
+        s <- PosixBS.fdPread fd nbytes offset
+        return (BLI.chunk s BL.empty)
 
 
 ----------------------------------------------------------------
