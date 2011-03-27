@@ -57,6 +57,8 @@ fdRead fd n = do
 -- in the @Fd@. Throws an exception if this is an invalid descriptor,
 -- or EOF has been reached. This is a thin wrapper around
 -- 'PosixBS.fdPread'.
+--
+-- /Since: 0.3.1/
 fdPread
     :: Fd
     -> ByteCount        -- ^ How many bytes to try to read.

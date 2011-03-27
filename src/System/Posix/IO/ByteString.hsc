@@ -34,26 +34,32 @@ module System.Posix.IO.ByteString
     -- *** The POSIX.1 @read(2)@ syscall
       fdRead
     , fdReadBuf
+    , tryFdReadBuf
     , fdReads
     -- *** The XPG4.2 @readv(2)@ syscall
     -- , fdReadv
     , fdReadvBuf
+    , tryFdReadvBuf
     -- *** The XPG4.2 @pread(2)@ syscall
     , fdPread
     , fdPreadBuf
+    , tryFdPreadBuf
     , fdPreads
     
     -- ** Writing
     -- *** The POSIX.1 @write(2)@ syscall
     , fdWrite
     , fdWriteBuf
+    , tryFdWriteBuf
     , fdWrites
     -- *** The XPG4.2 @writev(2)@ syscall
     , fdWritev
     , fdWritevBuf
+    , tryFdWritevBuf
     -- *** The XPG4.2 @pwrite(2)@ syscall
     , fdPwrite
     , fdPwriteBuf
+    , tryFdPwriteBuf
     ) where
 
 import           Data.Word                (Word8)
@@ -62,20 +68,16 @@ import qualified Data.ByteString.Internal as BSI
 import qualified Data.ByteString.Unsafe   as BSU
 
 import qualified System.IO.Error          as IOE
-{-
--- /N.B./, hsc2hs doesn't like this...
-#if (MIN_VERSION_unix(2,4,0))
-import           System.Posix.IO          (fdReadBuf, fdWriteBuf)
-#endif
--}
 import           System.Posix.Types.Iovec
 import           System.Posix.Types       (Fd, ByteCount, FileOffset
                                           , CSsize, COff)
 import           Foreign.C.Types          (CInt, CSize, CChar)
-import qualified Foreign.C.Error          as FFI (throwErrnoIfMinus1Retry)
-import           Foreign.Ptr              (Ptr)
-import qualified Foreign.Ptr              as FFI (castPtr, plusPtr)
+import qualified Foreign.C.Error          as C
+import           Foreign.Ptr              (Ptr, castPtr, plusPtr)
 import qualified Foreign.Marshal.Array    as FMA (withArrayLen)
+
+-- For the functor instance of 'Either', aka 'right' for ArrowChoice(->)
+import Control.Arrow (ArrowChoice(..))
 
 -- iovec, writev, and readv are in <sys/uio.h>, but we must include
 -- <sys/types.h> and <unistd.h> for legacy reasons.
@@ -93,56 +95,106 @@ ioErrorEOF fun =
             "EOF")
 
 
+-- | A variant of 'C.throwErrnoIfMinus1Retry' which returns 'Either'
+-- instead of throwing an errno error.
+eitherErrnoIfMinus1Retry :: (Num a) => IO a -> IO (Either C.Errno a)
+eitherErrnoIfMinus1Retry = eitherErrnoIfRetry (-1 ==)
+
+
+-- | A variant of 'C.throwErrnoIfRetry' which returns 'Either'
+-- instead of throwing an errno error.
+eitherErrnoIfRetry :: (a -> Bool) -> IO a -> IO (Either C.Errno a)
+eitherErrnoIfRetry p io = loop
+    where
+    loop = do
+        a <- io
+        if p a
+            then do
+                errno <- C.getErrno
+                if errno == C.eINTR
+                    then loop
+                    else return (Left errno)
+            else return (Right a)
+
 ----------------------------------------------------------------
--- /N.B./, hsc2hs doesn't like this...
--- #if ! (MIN_VERSION_unix(2,4,0))
--- This version was copied from unix-2.4.2.0
+foreign import ccall safe "read"
+    -- ssize_t read(int fildes, void *buf, size_t nbyte);
+    c_safe_read :: CInt -> Ptr CChar -> CSize -> IO CSsize
+
+
 -- | Read data from an 'Fd' into memory. This is exactly equivalent
--- to the POSIX.1 @read(2)@ system call.
+-- to the POSIX.1 @read(2)@ system call, except that we return 0
+-- bytes read if the @ByteCount@ argument is less than or equal to
+-- zero (instead of throwing an errno exception). /N.B./, this
+-- behavior is different from the version in @unix-2.4.2.0@ which
+-- only checks for equality to zero. If there are any errors, then
+-- they are thrown as 'IOE.IOError' exceptions.
 --
--- TODO: better documentation.
+-- /Since: 0.3.0/
 fdReadBuf
     :: Fd
     -> Ptr Word8    -- ^ Memory in which to put the data.
     -> ByteCount    -- ^ How many bytes to try to read.
     -> IO ByteCount -- ^ How many bytes were actually read (zero for EOF).
-fdReadBuf _  _   0      = return 0
-fdReadBuf fd buf nbytes = 
-    fmap fromIntegral
-        $ FFI.throwErrnoIfMinus1Retry
-            "System.Posix.IO.ByteString.fdReadBuf"
-            $ c_safe_read
-                (fromIntegral fd)
-                (FFI.castPtr  buf)
-                (fromIntegral nbytes)
+fdReadBuf fd buf nbytes
+    | nbytes <= 0 = return 0
+    | otherwise   =
+        fmap fromIntegral
+            $ C.throwErrnoIfMinus1Retry _fdReadBuf
+                $ c_safe_read
+                    (fromIntegral fd)
+                    (castPtr buf)
+                    (fromIntegral nbytes)
 
-foreign import ccall safe "read"
-    -- ssize_t read(int fildes, void *buf, size_t nbyte);
-    c_safe_read :: CInt -> Ptr CChar -> CSize -> IO CSsize
--- #endif
+_fdReadBuf :: String
+_fdReadBuf = "System.Posix.IO.ByteString.fdReadBuf"
+{-# NOINLINE _fdReadBuf #-}
+
+
+-- | Read data from an 'Fd' into memory. This is a variation of
+-- 'fdReadBuf' which returns errors with an 'Either' instead of
+-- throwing exceptions.
+--
+-- /Since: 0.3.3/
+tryFdReadBuf
+    :: Fd
+    -> Ptr Word8    -- ^ Memory in which to put the data.
+    -> ByteCount    -- ^ How many bytes to try to read.
+    -> IO (Either C.Errno ByteCount)
+        -- ^ How many bytes were actually read (zero for EOF).
+tryFdReadBuf fd buf nbytes
+    | nbytes <= 0 = return (Right 0)
+    | otherwise   =
+        fmap (right fromIntegral)
+            $ eitherErrnoIfMinus1Retry
+                $ c_safe_read
+                    (fromIntegral fd)
+                    (castPtr buf)
+                    (fromIntegral nbytes)
 
 
 ----------------------------------------------------------------
 -- | Read data from an 'Fd' and convert it to a 'BS.ByteString'.
 -- Throws an exception if this is an invalid descriptor, or EOF has
--- been reached.
---
--- This is essentially equivalent to the POSIX.1 @read(2)@ system
--- call; the differences are that we allocate a byte buffer for the
--- @ByteString@ (and then pass its underlying @Ptr Word8@ and
--- @ByteCount@ components to 'fdReadBuf'), and that we detect EOF
--- and throw an 'IOE.IOError'.
+-- been reached. This is essentially equivalent to 'fdReadBuf'; the
+-- differences are that we allocate a byte buffer for the @ByteString@,
+-- and that we detect EOF and throw an 'IOE.IOError'.
 fdRead
     :: Fd
     -> ByteCount        -- ^ How many bytes to try to read.
     -> IO BS.ByteString -- ^ The bytes read.
-fdRead _  0 = return BS.empty
-fdRead fd n =
-    BSI.createAndTrim (fromIntegral n) $ \buf -> do
-        rc <- fdReadBuf fd buf n
-        if 0 == rc
-            then ioErrorEOF "System.Posix.IO.ByteString.fdRead"
-            else return (fromIntegral rc)
+fdRead fd nbytes
+    | nbytes <= 0 = return BS.empty
+    | otherwise   = 
+        BSI.createAndTrim (fromIntegral nbytes) $ \buf -> do
+            rc <- fdReadBuf fd buf nbytes
+            if 0 == rc
+                then ioErrorEOF _fdRead
+                else return (fromIntegral rc)
+
+_fdRead :: String
+_fdRead = "System.Posix.IO.ByteString.fdRead"
+{-# NOINLINE _fdRead #-}
 
 
 ----------------------------------------------------------------
@@ -163,9 +215,7 @@ fdRead fd n =
 -- we can use:
 --
 -- > fdReadUptoNTimes :: Int -> Fd -> ByteCount -> IO ByteString
--- > fdReadUptoNTimes n0
--- >     | n0 <= 0   = \_ _ -> return empty
--- >     | otherwise = fdReads retry n0
+-- > fdReadUptoNTimes n0 = fdReads retry n0
 -- >     where
 -- >     retry _ 0 = Nothing
 -- >     retry _ n = Just $! n-1
@@ -176,111 +226,223 @@ fdRead fd n =
 -- would allocate a buffer, trim it to the number of bytes read,
 -- and then concatenate with the previous one (another allocation,
 -- plus copying everything over) for each time around the loop.
+--
+-- /Since: 0.2.1/
 fdReads
     :: (ByteCount -> a -> Maybe a) -- ^ A stateful predicate for retrying.
     -> a                           -- ^ An initial state for the predicate.
     -> Fd
     -> ByteCount                   -- ^ How many bytes to try to read.
     -> IO BS.ByteString            -- ^ The bytes read.
-fdReads _ _  _  0  = return BS.empty
-fdReads f z0 fd n0 = BSI.createAndTrim (fromIntegral n0) (go z0 0 n0)
+fdReads f z0 fd n0
+    | n0 <= 0   = return BS.empty
+    | otherwise = BSI.createAndTrim (fromIntegral n0) (go z0 0 n0)
     where
     go _ len n buf | len `seq` n `seq` buf `seq` False = undefined
     go z len n buf = do
         rc <- fdReadBuf fd buf n
         let len' = len + rc
         case rc of
-          _ | rc == 0 -> ioErrorEOF "System.Posix.IO.ByteString.fdReads"
+          _ | rc == 0 -> ioErrorEOF _fdReads
             | rc == n -> return (fromIntegral len') -- Finished.
             | otherwise ->
                 case f len' z of
                 Nothing -> return (fromIntegral len') -- Gave up.
                 Just z' ->
-                    go z' len' (n - rc) (buf `FFI.plusPtr` fromIntegral rc)
+                    go z' len' (n - rc) (buf `plusPtr` fromIntegral rc)
+
+_fdReads :: String
+_fdReads = "System.Posix.IO.ByteString.fdReads"
+{-# NOINLINE _fdReads #-}
 
 
 ----------------------------------------------------------------
+foreign import ccall safe "readv"
+    -- ssize_t readv(int fildes, const struct iovec *iov, int iovcnt);
+    c_safe_readv :: CInt -> Ptr CIovec -> CInt -> IO CSsize
+{-
+-- N.B., c_safe_readv will throw errno=EINVAL
+-- if iovcnt <= 0 || > 16,
+-- if one of the iov_len values in the iov array was negative,
+-- if the sum of the iov_len values in the iov array overflowed a 32-bit integer.
+    
+fdReadvBufSafe :: Fd -> Ptr CIovec -> Int -> IO ByteCount
+fdReadvBufSafe fd = go 0
+    where
+    go rc bufs len
+        | len <= 0  = return rc
+        | otherwise = do
+            m <- checkIovecs bufs (min 16 len)
+            case m of
+                Nothing                 -> error
+                Just (bufs', l, nbytes) -> do
+                    rc' <- fdReadvBuf fd bufs l
+                    if rc' == nbytes
+                        then go (rc+rc') bufs' (len-l)
+                        else return (rc+rc')
+
+checkIovecs :: Ptr CIovec -> Int -> IO (Maybe (Ptr CIovec, Int, ByteCount))
+checkIovecs = go (0 :: Int32) 0
+    where
+    go nbytes n p len
+        | nbytes `seq` n `seq` p `seq` len `seq` False = undefined
+        | len == 0  = return (Just (p, n, fromIntegral nbytes)
+        | otherwise = do
+            l <- iov_len <$> peek p
+            if l < 0
+                then return Nothing
+                else do
+                    let nbytes' = nbytes+l
+                    if nbytes' < 0
+                        then return (Just (p, n, fromIntegral nbytes)
+                        else go nbytes' (n+1) (p++) (len-1)
+-}
+
+
 -- | Read data from an 'Fd' and scatter it into memory. This is
--- exactly equivalent to the XPG4.2 @readv(2)@ system call.
+-- exactly equivalent to the XPG4.2 @readv(2)@ system call, except
+-- that we return 0 bytes read if the @Int@ argument is less than
+-- or equal to zero (instead of throwing an 'C.eINVAL' exception).
+-- If there are any errors, then they are thrown as 'IOE.IOError'
+-- exceptions.
 --
 -- TODO: better documentation.
+--
+-- /Since: 0.3.0/
 fdReadvBuf
     :: Fd
     -> Ptr CIovec   -- ^ A C-style array of buffers to fill.
     -> Int          -- ^ How many buffers there are.
     -> IO ByteCount -- ^ How many bytes were actually read (zero for EOF).
-fdReadvBuf _  _    0   = return 0
-fdReadvBuf fd bufs len =
-    fmap fromIntegral
-        $ FFI.throwErrnoIfMinus1Retry
-            "System.Posix.IO.ByteString.fdReadvBuf"
-            $ c_safe_readv (fromIntegral fd) bufs (fromIntegral len)
+fdReadvBuf fd bufs len
+    | len <= 0  = return 0
+    | otherwise =
+        fmap fromIntegral
+            $ C.throwErrnoIfMinus1Retry _fdReadvBuf
+                $ c_safe_readv (fromIntegral fd) bufs (fromIntegral len)
 
-foreign import ccall safe "readv"
-    -- ssize_t readv(int fildes, const struct iovec *iov, int iovcnt);
-    c_safe_readv :: CInt -> Ptr CIovec -> CInt -> IO CSsize
+_fdReadvBuf :: String
+_fdReadvBuf = "System.Posix.IO.ByteString.fdReadvBuf"
+{-# NOINLINE _fdReadvBuf #-}
+
+
+-- | Read data from an 'Fd' and scatter it into memory. This is a
+-- variation of 'fdReadvBuf' which returns errors with an 'Either'
+-- instead of throwing exceptions.
+--
+-- /Since: 0.3.3/
+tryFdReadvBuf
+    :: Fd
+    -> Ptr CIovec   -- ^ A C-style array of buffers to fill.
+    -> Int          -- ^ How many buffers there are.
+    -> IO (Either C.Errno ByteCount)
+        -- ^ How many bytes were actually read (zero for EOF).
+tryFdReadvBuf fd bufs len
+    | len <= 0  = return (Right 0)
+    | otherwise =
+        fmap (right fromIntegral)
+            $ eitherErrnoIfMinus1Retry
+                $ c_safe_readv (fromIntegral fd) bufs (fromIntegral len)
 
 
 -- TODO: What's a reasonable wrapper for fdReadvBuf to make it Haskellish?
 
 ----------------------------------------------------------------
+foreign import ccall safe "pread"
+    -- ssize_t pread(int fildes, void *buf, size_t nbyte, off_t offset);
+    c_safe_pread :: CInt -> Ptr Word8 -> CSize -> COff -> IO CSsize
+
+
 -- | Read data from a specified position in the 'Fd' into memory,
 -- without altering the position stored in the @Fd@. This is exactly
--- equivalent to the XPG4.2 @pread(2)@ system call.
+-- equivalent to the XPG4.2 @pread(2)@ system call, except that we
+-- return 0 bytes read if the @Int@ argument is less than or equal
+-- to zero (instead of throwing an errno exception). If there are
+-- any errors, then they are thrown as 'IOE.IOError' exceptions.
 --
--- TODO: better documentation.
+-- /Since: 0.3.0/
 fdPreadBuf
     :: Fd
     -> Ptr Word8    -- ^ Memory in which to put the data.
     -> ByteCount    -- ^ How many bytes to try to read.
     -> FileOffset   -- ^ Where to read the data from.
     -> IO ByteCount -- ^ How many bytes were actually read (zero for EOF).
-fdPreadBuf _  _   0      _      = return 0
-fdPreadBuf fd buf nbytes offset =
-    fmap fromIntegral
-        $ FFI.throwErrnoIfMinus1Retry
-            "System.Posix.IO.ByteString.fdPreadBuf"
-            $ c_safe_pread
-                (fromIntegral fd)
-                (FFI.castPtr  buf)
-                (fromIntegral nbytes)
-                (fromIntegral offset)
+fdPreadBuf fd buf nbytes offset
+    | nbytes <= 0 = return 0
+    | otherwise   =
+        fmap fromIntegral
+            $ C.throwErrnoIfMinus1Retry _fdPreadBuf
+                $ c_safe_pread
+                    (fromIntegral fd)
+                    buf
+                    (fromIntegral nbytes)
+                    (fromIntegral offset)
 
-foreign import ccall safe "pread"
-    -- ssize_t pread(int fildes, void *buf, size_t nbyte, off_t offset);
-    c_safe_pread :: CInt -> Ptr Word8 -> CSize -> COff -> IO CSsize
+_fdPreadBuf :: String
+_fdPreadBuf = "System.Posix.IO.ByteString.fdPreadBuf"
+{-# NOINLINE _fdPreadBuf #-}
 
+
+-- | Read data from a specified position in the 'Fd' into memory,
+-- without altering the position stored in the @Fd@. This is a
+-- variation of 'fdPreadBuf' which returns errors with an 'Either'
+-- instead of throwing exceptions.
+--
+-- /Since: 0.3.3/
+tryFdPreadBuf
+    :: Fd
+    -> Ptr Word8    -- ^ Memory in which to put the data.
+    -> ByteCount    -- ^ How many bytes to try to read.
+    -> FileOffset   -- ^ Where to read the data from.
+    -> IO (Either C.Errno ByteCount)
+        -- ^ How many bytes were actually read (zero for EOF).
+tryFdPreadBuf fd buf nbytes offset
+    | nbytes <= 0 = return (Right 0)
+    | otherwise   =
+        fmap (right fromIntegral)
+            $ eitherErrnoIfMinus1Retry
+                $ c_safe_pread
+                    (fromIntegral fd)
+                    buf
+                    (fromIntegral nbytes)
+                    (fromIntegral offset)
 
 ----------------------------------------------------------------
 -- | Read data from a specified position in the 'Fd' and convert
 -- it to a 'BS.ByteString', without altering the position stored
 -- in the @Fd@. Throws an exception if this is an invalid descriptor,
--- or EOF has been reached.
+-- or EOF has been reached. This is essentially equivalent to
+-- 'fdPreadBuf'; the differences are that we allocate a byte buffer
+-- for the @ByteString@, and that we detect EOF and throw an
+-- 'IOE.IOError'.
 --
--- This is essentially equivalent to the XPG4.2 @pread(2)@ system
--- call; the differences are that we allocate a byte buffer for the
--- @ByteString@ (and then pass its underlying @Ptr Word8@ and
--- @ByteCount@ components to 'fdPreadBuf'), and that we detect EOF
--- and throw an 'IOE.IOError'.
+-- /Since: 0.3.0/
 fdPread
     :: Fd
     -> ByteCount        -- ^ How many bytes to try to read.
     -> FileOffset       -- ^ Where to read the data from.
     -> IO BS.ByteString -- ^ The bytes read.
-fdPread _  0 _      = return BS.empty
-fdPread fd n offset =
-    BSI.createAndTrim (fromIntegral n) $ \buf -> do
-        rc <- fdPreadBuf fd buf n offset
-        if 0 == rc
-            then ioErrorEOF "System.Posix.IO.ByteString.fdPread"
-            else return (fromIntegral rc)
+fdPread fd nbytes offset
+    | nbytes <= 0 = return BS.empty
+    | otherwise   =
+        BSI.createAndTrim (fromIntegral nbytes) $ \buf -> do
+            rc <- fdPreadBuf fd buf nbytes offset
+            if 0 == rc
+                then ioErrorEOF _fdPread
+                else return (fromIntegral rc)
+
+_fdPread :: String
+_fdPread = "System.Posix.IO.ByteString.fdPread"
+{-# NOINLINE _fdPread #-}
 
 ----------------------------------------------------------------
 -- | Read data from a specified position in the 'Fd' and convert
 -- it to a 'BS.ByteString', without altering the position stored
 -- in the @Fd@. Throws an exception if this is an invalid descriptor,
--- or EOF has been reached. This is a @pread(2)@ based version of
--- 'fdReads'; see that function for more details.
+-- or EOF has been reached. This is a 'fdPreadBuf' based version
+-- of 'fdReads'; see those functions for more details.
+--
+-- /Since: 0.3.1/
 fdPreads
     :: (ByteCount -> a -> Maybe a) -- ^ A stateful predicate for retrying.
     -> a                           -- ^ An initial state for the predicate.
@@ -288,57 +450,90 @@ fdPreads
     -> ByteCount                   -- ^ How many bytes to try to read.
     -> FileOffset                  -- ^ Where to read the data from.
     -> IO BS.ByteString            -- ^ The bytes read.
-fdPreads _ _  _  0  _      = return BS.empty
-fdPreads f z0 fd n0 offset = BSI.createAndTrim (fromIntegral n0) (go z0 0 n0)
+fdPreads f z0 fd n0 offset
+    | n0 <= 0   = return BS.empty
+    | otherwise = BSI.createAndTrim (fromIntegral n0) (go z0 0 n0)
     where
     go _ len n buf | len `seq` n `seq` buf `seq` False = undefined
     go z len n buf = do
         rc <- fdPreadBuf fd buf n (offset + fromIntegral len)
         let len' = len + rc
         case rc of
-          _ | rc == 0 -> ioErrorEOF "System.Posix.IO.ByteString.fdPreads"
+          _ | rc == 0 -> ioErrorEOF _fdPreads
             | rc == n -> return (fromIntegral len') -- Finished.
             | otherwise ->
                 case f len' z of
                 Nothing -> return (fromIntegral len') -- Gave up.
                 Just z' ->
-                    go z' len' (n - rc) (buf `FFI.plusPtr` fromIntegral rc)
+                    go z' len' (n - rc) (buf `plusPtr` fromIntegral rc)
+
+_fdPreads :: String
+_fdPreads = "System.Posix.IO.ByteString.fdPreads"
+{-# NOINLINE _fdPreads #-}
 
 ----------------------------------------------------------------
 ----------------------------------------------------------------
--- /N.B./, hsc2hs doesn't like this...
--- #if ! (MIN_VERSION_unix(2,4,0))
--- This version was copied from unix-2.4.2.0
+foreign import ccall safe "write" 
+    -- ssize_t write(int fildes, const void *buf, size_t nbyte);
+    c_safe_write :: CInt -> Ptr CChar -> CSize -> IO CSsize
+
+
 -- | Write data from memory to an 'Fd'. This is exactly equivalent
--- to the POSIX.1 @write(2)@ system call.
+-- to the POSIX.1 @write(2)@ system call, except that we return 0
+-- bytes written if the @ByteCount@ argument is less than or equal
+-- to zero (instead of throwing an errno exception). /N.B./, this
+-- behavior is different from the version in @unix-2.4.2.0@ which
+-- doesn't check the byte count. If there are any errors, then they
+-- are thrown as 'IOE.IOError' exceptions.
 --
--- TODO: better documentation.
+-- /Since: 0.3.0/
 fdWriteBuf
     :: Fd
     -> Ptr Word8    -- ^ Memory containing the data to write.
     -> ByteCount    -- ^ How many bytes to try to write.
     -> IO ByteCount -- ^ How many bytes were actually written.
-fdWriteBuf fd buf nbytes =
-    fmap fromIntegral
-        $ FFI.throwErrnoIfMinus1Retry
-            "System.Posix.IO.ByteString.fdWriteBuf"
-            $ c_safe_write
-                (fromIntegral fd)
-                (FFI.castPtr  buf)
-                (fromIntegral nbytes)
+fdWriteBuf fd buf nbytes
+    | nbytes <= 0 = return 0
+    | otherwise   = 
+        fmap fromIntegral
+            $ C.throwErrnoIfMinus1Retry _fdWriteBuf
+                $ c_safe_write
+                    (fromIntegral fd)
+                    (castPtr buf)
+                    (fromIntegral nbytes)
 
-foreign import ccall safe "write" 
-    -- ssize_t write(int fildes, const void *buf, size_t nbyte);
-    c_safe_write :: CInt -> Ptr CChar -> CSize -> IO CSsize
--- #endif
+_fdWriteBuf :: String
+_fdWriteBuf = "System.Posix.IO.ByteString.fdWriteBuf"
+{-# NOINLINE _fdWriteBuf #-}
 
+
+-- | Write data from memory to an 'Fd'. This is a variation of
+-- 'fdWriteBuf' which returns errors with an 'Either' instead of
+-- throwing exceptions.
+--
+-- /Since: 0.3.3/
+tryFdWriteBuf
+    :: Fd
+    -> Ptr Word8    -- ^ Memory containing the data to write.
+    -> ByteCount    -- ^ How many bytes to try to write.
+    -> IO (Either C.Errno ByteCount)
+        -- ^ How many bytes were actually read (zero for EOF).
+tryFdWriteBuf fd buf nbytes
+    | nbytes <= 0 = return (Right 0)
+    | otherwise   =
+        fmap (right fromIntegral)
+            $ eitherErrnoIfMinus1Retry
+                $ c_safe_write
+                    (fromIntegral fd)
+                    (castPtr buf)
+                    (fromIntegral nbytes)
 
 ----------------------------------------------------------------
 -- | Write a 'BS.ByteString' to an 'Fd'. The return value is the
 -- total number of bytes actually written. This is exactly equivalent
--- to the POSIX.1 @write(2)@ system call; we just convert the
--- @ByteString@ into its underlying @Ptr Word8@ and @ByteCount@
--- components for passing to 'fdWriteBuf'.
+-- to 'fdWriteBuf'; we just convert the @ByteString@ into its
+-- underlying @Ptr Word8@ and @ByteCount@ components for passing
+-- to 'fdWriteBuf'.
 fdWrite
     :: Fd
     -> BS.ByteString -- ^ The string to write.
@@ -348,7 +543,7 @@ fdWrite fd s =
     -- BS.useAsCStringLen if there's any chance fdWriteBuf might
     -- alter the buffer.
     BSU.unsafeUseAsCStringLen s $ \(buf,len) -> do
-        fdWriteBuf fd (FFI.castPtr buf) (fromIntegral len)
+        fdWriteBuf fd (castPtr buf) (fromIntegral len)
 
 
 ----------------------------------------------------------------
@@ -360,11 +555,11 @@ fdWrite fd s =
 -- (i.e., removing the bytes already written) in case there is some
 -- semantic significance to the way the input is split into chunks.
 --
--- This version consumes the list lazily and will call the @write(2)@
--- system call once for each @ByteString@. This laziness allows the
--- early parts of the list to be garbage collected and prevents
--- needing to hold the whole list of @ByteString@s in memory at
--- once. Compare against 'fdWritev'.
+-- This version consumes the list lazily and will call 'fdWrite'
+-- once for each @ByteString@, thus making /O(n)/ system calls.
+-- This laziness allows the early parts of the list to be garbage
+-- collected and prevents needing to hold the whole list of
+-- @ByteString@s in memory at once. Compare against 'fdWritev'.
 fdWrites
     :: Fd
     -> [BS.ByteString]
@@ -388,25 +583,63 @@ fdWrites fd = go 0
 
 
 ----------------------------------------------------------------
+foreign import ccall safe "writev"
+    -- ssize_t writev(int fildes, const struct iovec *iov, int iovcnt);
+    c_safe_writev :: CInt -> Ptr CIovec -> CInt -> IO CSsize
+{-
+-- N.B., c_safe_readv will throw errno=EINVAL
+-- if iovcnt is less than or equal to 0, or greater than UIO_MAXIOV. (BUG: I have no idea where UIO_MAXIOV is defined! The web says it's in <linux/uio.h>, and some suggest using <limits.h>IOV_MAX or <limits.h>_XOPEN_IOV_MAX instead.)
+-- <http://www.mail-archive.com/freebsd-current@freebsd.org/msg27878.html>
+-- <http://www.mail-archive.com/naviserver-devel@lists.sourceforge.net/msg02237.html>
+-- -- That last link says that glibc might transparently chop up larger values before sending to the kernel.
+-- if one of the iov_len values in the iov array is negative.
+-- if the sum of the iov_len values in the iov array overflows a 32-bit integer.
+-}
+
+
 -- | Write data from memory to an 'Fd'. This is exactly equivalent
--- to the XPG4.2 @writev(2)@ system call.
+-- to the XPG4.2 @writev(2)@ system call, except that we return 0
+-- bytes written if the @Int@ argument is less than or equal to
+-- zero (instead of throwing an 'C.eINVAL' exception). If there are
+-- any errors, then they are thrown as 'IOE.IOError' exceptions.
 --
 -- TODO: better documentation.
+--
+-- /Since: 0.3.0/
 fdWritevBuf
     :: Fd
     -> Ptr CIovec   -- ^ A C-style array of buffers to write.
     -> Int          -- ^ How many buffers there are.
     -> IO ByteCount -- ^ How many bytes were actually written.
-fdWritevBuf _  _    0   = return 0
-fdWritevBuf fd bufs len =
-    fmap fromIntegral
-        $ FFI.throwErrnoIfMinus1Retry
-            "System.Posix.IO.ByteString.fdWritevBuf"
-            $ c_safe_writev (fromIntegral fd) bufs (fromIntegral len)
+fdWritevBuf fd bufs len
+    | len <= 0  = return 0
+    | otherwise =
+        fmap fromIntegral
+            $ C.throwErrnoIfMinus1Retry _fdWritevBuf
+                $ c_safe_writev (fromIntegral fd) bufs (fromIntegral len)
 
-foreign import ccall safe "writev"
-    -- ssize_t writev(int fildes, const struct iovec *iov, int iovcnt);
-    c_safe_writev :: CInt -> Ptr CIovec -> CInt -> IO CSsize
+_fdWritevBuf :: String
+_fdWritevBuf = "System.Posix.IO.ByteString.fdWritevBuf"
+{-# NOINLINE _fdWritevBuf #-}
+
+
+-- | Write data from memory to an 'Fd'. This is a variation of
+-- 'fdWritevBuf' which returns errors with an 'Either' instead of
+-- throwing exceptions.
+--
+-- /Since: 0.3.3/
+tryFdWritevBuf
+    :: Fd
+    -> Ptr CIovec   -- ^ A C-style array of buffers to write.
+    -> Int          -- ^ How many buffers there are.
+    -> IO (Either C.Errno ByteCount)
+        -- ^ How many bytes were actually read (zero for EOF).
+tryFdWritevBuf fd bufs len
+    | len <= 0  = return (Right 0)
+    | otherwise =
+        fmap (right fromIntegral)
+            $ eitherErrnoIfMinus1Retry
+                $ c_safe_writev (fromIntegral fd) bufs (fromIntegral len)
 
 
 ----------------------------------------------------------------
@@ -415,9 +648,9 @@ foreign import ccall safe "writev"
 -- @writev(2)@ system call does not provide enough information to
 -- return the triple that 'fdWrites' does.
 --
--- This version will force the spine of the list, convert each
--- @ByteString@ into an @iovec@, and then call the @writev(2)@
--- system call. This means we only make one system call, which
+-- This version will force the spine of the list, converting each
+-- @ByteString@ into an @iovec@ (see 'CIovec'), and then call
+-- 'fdWritevBuf'. This means we only make one system call, which
 -- reduces the overhead of performing context switches. But it also
 -- means that we must store the whole list of @ByteString@s in
 -- memory at once, and that we must perform some allocation and
@@ -435,39 +668,75 @@ fdWritev fd cs = do
 
 
 ----------------------------------------------------------------
+foreign import ccall safe "pwrite"
+    -- ssize_t pwrite(int fildes, const void *buf, size_t nbyte, off_t offset);
+    c_safe_pwrite :: CInt -> Ptr Word8 -> CSize -> COff -> IO CSsize
+
+
 -- | Write data from memory to a specified position in the 'Fd',
 -- but without altering the position stored in the @Fd@. This is
--- exactly equivalent to the XPG4.2 @pwrite(2)@ system call.
+-- exactly equivalent to the XPG4.2 @pwrite(2)@ system call, except
+-- that we return 0 bytes written if the @ByteCount@ argument is
+-- less than or equal to zero (instead of throwing an errno exception).
+-- If there are any errors, then they are thrown as 'IOE.IOError'
+-- exceptions.
 --
--- TODO: better documentation.
+-- /Since: 0.3.0/
 fdPwriteBuf
     :: Fd
     -> Ptr Word8    -- ^ Memory containing the data to write.
     -> ByteCount    -- ^ How many bytes to try to write.
     -> FileOffset   -- ^ Where to write the data to.
     -> IO ByteCount -- ^ How many bytes were actually written.
-fdPwriteBuf _  _   0      _      = return 0
-fdPwriteBuf fd buf nbytes offset =
-    fmap fromIntegral
-        $ FFI.throwErrnoIfMinus1Retry
-            "System.Posix.IO.ByteString.fdPwriteBuf"
-            $ c_safe_pwrite
-                (fromIntegral fd)
-                (FFI.castPtr  buf)
-                (fromIntegral nbytes)
-                (fromIntegral offset)
+fdPwriteBuf fd buf nbytes offset
+    | nbytes <= 0 = return 0
+    | otherwise   =
+        fmap fromIntegral
+            $ C.throwErrnoIfMinus1Retry _fdPwriteBuf
+                $ c_safe_pwrite
+                    (fromIntegral fd)
+                    (castPtr buf)
+                    (fromIntegral nbytes)
+                    (fromIntegral offset)
 
-foreign import ccall safe "pwrite"
-    -- ssize_t pwrite(int fildes, const void *buf, size_t nbyte, off_t offset);
-    c_safe_pwrite :: CInt -> Ptr Word8 -> CSize -> COff -> IO CSsize
+_fdPwriteBuf :: String
+_fdPwriteBuf = "System.Posix.IO.ByteString.fdPwriteBuf"
+{-# NOINLINE _fdPwriteBuf #-}
+
+
+-- | Write data from memory to a specified position in the 'Fd',
+-- but without altering the position stored in the @Fd@. This is a
+-- variation of 'fdPwriteBuf' which returns errors with an 'Either'
+-- instead of throwing exceptions.
+--
+-- /Since: 0.3.3/
+tryFdPwriteBuf
+    :: Fd
+    -> Ptr Word8    -- ^ Memory containing the data to write.
+    -> ByteCount    -- ^ How many bytes to try to write.
+    -> FileOffset   -- ^ Where to write the data to.
+    -> IO (Either C.Errno ByteCount)
+        -- ^ How many bytes were actually written.
+tryFdPwriteBuf fd buf nbytes offset
+    | nbytes <= 0 = return (Right 0)
+    | otherwise   =
+        fmap (right fromIntegral)
+            $ eitherErrnoIfMinus1Retry
+                $ c_safe_pwrite
+                    (fromIntegral fd)
+                    (castPtr buf)
+                    (fromIntegral nbytes)
+                    (fromIntegral offset)
 
 
 ----------------------------------------------------------------
 -- | Write data from memory to a specified position in the 'Fd',
 -- but without altering the position stored in the @Fd@. This is
--- exactly equivalent to the XPG4.2 @pwrite(2)@ system call; we
--- just convert the @ByteString@ into its underlying @Ptr Word8@
--- and @ByteCount@ components for passing to 'fdPwriteBuf'.
+-- exactly equivalent to 'fdPwriteBuf'; we just convert the
+-- @ByteString@ into its underlying @Ptr Word8@ and @ByteCount@
+-- components for passing to 'fdPwriteBuf'.
+--
+-- /Since: 0.3.0/
 fdPwrite
     :: Fd
     -> BS.ByteString -- ^ The string to write.
@@ -478,7 +747,7 @@ fdPwrite fd s offset =
     -- BS.useAsCStringLen if there's any chance fdPwriteBuf might
     -- alter the buffer.
     BSU.unsafeUseAsCStringLen s $ \(buf,len) -> do
-        fdPwriteBuf fd (FFI.castPtr buf) (fromIntegral len) offset
+        fdPwriteBuf fd (castPtr buf) (fromIntegral len) offset
 
 ----------------------------------------------------------------
 ----------------------------------------------------------- fin.

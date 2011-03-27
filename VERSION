@@ -1,3 +1,5 @@
+0.3.3 (2011-03-26):
+	- System.Posix.IO.ByteString: added tryFdReadBuf, tryFdReadvBuf, tryFdPreadBuf, tryFdWriteBuf, tryFdWritevBuf, tryFdPwriteBuf
 0.3.2.1 (2011-03-20):
 	- Changed the cabal category label to System
 	- Uploaded to Hackage
