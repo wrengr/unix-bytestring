@@ -1,3 +1,13 @@
+=== Notes ===
+
+The following license applies to all code in this package, with the
+exception of the functions System.Posix.IO.ByteString.fdReadBuf and
+System.Posix.IO.ByteString.fdWriteBuf. Those functions were copied
+from the unix package and are subject to the license described in
+LICENSE-unix, as well as this license.
+
+=== unix-bytestring license ===
+
 Copyright (c) 2010, 2011, wren ng thornton.
 ALL RIGHTS RESERVED.
 

@@ -1,3 +1,5 @@
+0.3.4.1 (2011-04-03):
+	- LICENSE: corrected license for the fdReadBuf and fdWriteBuf functions
 0.3.4 (2011-03-26):
 	- System.Posix.IO.ByteString.Lazy: Fixed functions to check (<=0) instead of (==0)
 0.3.3 (2011-03-26):
