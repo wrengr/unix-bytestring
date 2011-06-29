@@ -62,8 +62,10 @@ module System.Posix.IO.ByteString
     , tryFdPwriteBuf
     
     -- ** Seeking
-    -- ^ These functions are not @ByteString@ related, but are
-    -- provided here for a more complete API.
+    -- | These functions are not 'ByteString' related, but are
+    -- provided here for API completeness.
+
+    -- *** The POSIX.1 @lseek(2)@ syscall
     , fdSeek
     , tryFdSeek
     ) where
@@ -736,6 +738,7 @@ fdPwrite fd s offset =
     BSU.unsafeUseAsCStringLen s $ \(buf,len) -> do
         fdPwriteBuf fd (castPtr buf) (fromIntegral len) offset
 
+
 ----------------------------------------------------------------
 -- It's not clear whether the @unix@ version uses a safe or unsafe call.
 foreign import ccall safe "lseek"
@@ -759,8 +762,9 @@ mode2Int SeekFromEnd  = (#const SEEK_END)
 --
 -- /Since: 0.3.5/
 fdSeek :: Fd -> SeekMode -> FileOffset -> IO FileOffset
-fdSeek (Fd fd) mode off =
-    C.throwErrnoIfMinus1 "fdSeek" (c_safe_lseek fd off (mode2Int mode))
+fdSeek fd mode off =
+    C.throwErrnoIfMinus1 "fdSeek"
+        $ c_safe_lseek (fromIntegral fd) off (mode2Int mode)
 
 
 -- | Repositions the offset of the file descriptor according to the
@@ -770,8 +774,9 @@ fdSeek (Fd fd) mode off =
 --
 -- /Since: 0.3.5/
 tryFdSeek :: Fd -> SeekMode -> FileOffset -> IO (Either C.Errno FileOffset)
-tryFdSeek (Fd fd) mode off =
-    eitherErrnoIfMinus1 (c_safe_lseek fd off (mode2Int mode))
+tryFdSeek fd mode off =
+    eitherErrnoIfMinus1
+        $ c_safe_lseek (fromIntegral fd) off (mode2Int mode)
 
 ----------------------------------------------------------------
 ----------------------------------------------------------- fin.

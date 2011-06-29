@@ -42,8 +42,8 @@ import qualified Foreign.Ptr     as FFI
 -- of throwing an errno error.
 eitherErrnoIf
     :: (a -> Bool)  -- ^ Predicate to apply to the result value of
-                    --   the 'IO' operation.
-    -> IO a         -- ^ The 'IO' operation to be executed.
+                    --   the @IO@ operation.
+    -> IO a         -- ^ The @IO@ operation to be executed.
     -> IO (Either C.Errno a)
 eitherErrnoIf p io = do
     a <- io
@@ -58,8 +58,8 @@ eitherErrnoIf p io = do
 -- instead of throwing an errno error.
 eitherErrnoIfRetry
     :: (a -> Bool)  -- ^ Predicate to apply to the result value of
-                    --   the 'IO' operation.
-    -> IO a         -- ^ The 'IO' operation to be executed.
+                    --   the @IO@ operation.
+    -> IO a         -- ^ The @IO@ operation to be executed.
     -> IO (Either C.Errno a)
 eitherErrnoIfRetry p io = loop
     where
@@ -74,12 +74,12 @@ eitherErrnoIfRetry p io = loop
             else return (Right a)
 
 
--- | A variant of 'C.throwErrnoIfRetryMayBlock which returns @Either@
--- instead of throwing an errno error.
+-- | A variant of 'C.throwErrnoIfRetryMayBlock' which returns
+-- @Either@ instead of throwing an errno error.
 eitherErrnoIfRetryMayBlock
     :: (a -> Bool)  -- ^ Predicate to apply to the result value of
-                    --   the 'IO' operation.
-    -> IO a         -- ^ The 'IO' operation to be executed.
+                    --   the @IO@ operation.
+    -> IO a         -- ^ The @IO@ operation to be executed.
     -> IO b         -- ^ Action to execute before retrying if an
                     --   immediate retry would block.
     -> IO (Either C.Errno a)
@@ -91,10 +91,10 @@ eitherErrnoIfRetryMayBlock p f on_block = loop
             then do
                 errno <- C.getErrno
                 if errno == C.eINTR
-                then loop
-                else if errno == C.eWOULDBLOCK || errno == C.eAGAIN
-                     then on_block >> loop
-                     else return (Left errno)
+                    then loop
+                    else if errno == C.eWOULDBLOCK || errno == C.eAGAIN
+                         then on_block >> loop
+                         else return (Left errno)
             else return (Right a)
 
 ----------------------------------------------------------------
@@ -118,7 +118,7 @@ eitherErrnoIfNullRetry :: IO (FFI.Ptr a) -> IO (Either C.Errno (FFI.Ptr a))
 eitherErrnoIfNullRetry = eitherErrnoIfRetry (== FFI.nullPtr)
 
 eitherErrnoIfNullRetryMayBlock
-    :: IO (FFI.Ptr a) -> IO (Either C.Errno (FFI.Ptr a))
+    :: IO (FFI.Ptr a) -> IO b -> IO (Either C.Errno (FFI.Ptr a))
 eitherErrnoIfNullRetryMayBlock =
     eitherErrnoIfRetryMayBlock (== FFI.nullPtr)
 
