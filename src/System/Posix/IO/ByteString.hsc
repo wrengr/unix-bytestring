@@ -11,7 +11,7 @@ a note of.
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2011.03.17
+--                                                    2011.06.29
 -- |
 -- Module      :  System.Posix.IO.ByteString
 -- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
@@ -60,6 +60,12 @@ module System.Posix.IO.ByteString
     , fdPwrite
     , fdPwriteBuf
     , tryFdPwriteBuf
+    
+    -- ** Seeking
+    -- ^ These functions are not @ByteString@ related, but are
+    -- provided here for a more complete API.
+    , fdSeek
+    , tryFdSeek
     ) where
 
 import           Data.Word                (Word8)
@@ -67,12 +73,14 @@ import qualified Data.ByteString          as BS
 import qualified Data.ByteString.Internal as BSI
 import qualified Data.ByteString.Unsafe   as BSU
 
+import           System.IO                (SeekMode(..))
 import qualified System.IO.Error          as IOE
 import           System.Posix.Types.Iovec
 import           System.Posix.Types       (Fd, ByteCount, FileOffset
                                           , CSsize, COff)
 import           Foreign.C.Types          (CInt, CSize, CChar)
 import qualified Foreign.C.Error          as C
+import           Foreign.C.Error.Safe
 import           Foreign.Ptr              (Ptr, castPtr, plusPtr)
 import qualified Foreign.Marshal.Array    as FMA (withArrayLen)
 
@@ -94,27 +102,6 @@ ioErrorEOF fun =
             (IOE.mkIOError IOE.eofErrorType fun Nothing Nothing)
             "EOF")
 
-
--- | A variant of 'C.throwErrnoIfMinus1Retry' which returns 'Either'
--- instead of throwing an errno error.
-eitherErrnoIfMinus1Retry :: (Num a) => IO a -> IO (Either C.Errno a)
-eitherErrnoIfMinus1Retry = eitherErrnoIfRetry (-1 ==)
-
-
--- | A variant of 'C.throwErrnoIfRetry' which returns 'Either'
--- instead of throwing an errno error.
-eitherErrnoIfRetry :: (a -> Bool) -> IO a -> IO (Either C.Errno a)
-eitherErrnoIfRetry p io = loop
-    where
-    loop = do
-        a <- io
-        if p a
-            then do
-                errno <- C.getErrno
-                if errno == C.eINTR
-                    then loop
-                    else return (Left errno)
-            else return (Right a)
 
 ----------------------------------------------------------------
 foreign import ccall safe "read"
@@ -748,6 +735,43 @@ fdPwrite fd s offset =
     -- alter the buffer.
     BSU.unsafeUseAsCStringLen s $ \(buf,len) -> do
         fdPwriteBuf fd (castPtr buf) (fromIntegral len) offset
+
+----------------------------------------------------------------
+-- It's not clear whether the @unix@ version uses a safe or unsafe call.
+foreign import ccall safe "lseek"
+    -- off_t lseek(int fildes, off_t offset, int whence);
+    c_safe_lseek :: CInt -> COff -> CInt -> IO COff
+
+
+mode2Int :: SeekMode -> CInt
+mode2Int AbsoluteSeek = (#const SEEK_SET)
+mode2Int RelativeSeek = (#const SEEK_CUR)
+mode2Int SeekFromEnd  = (#const SEEK_END)
+
+
+-- | Repositions the offset of the file descriptor according to the
+-- offset and the seeking mode. This is exactly equivalent to the
+-- POSIX.1 @lseek(2)@ system call. If there are any errors, then
+-- they are thrown as 'IOE.IOError' exceptions.
+--
+-- This is the same as 'System.Posix.IO.fdSeek' in @unix-2.4.2.0@,
+-- but provided here for consistency.
+--
+-- /Since: 0.3.5/
+fdSeek :: Fd -> SeekMode -> FileOffset -> IO FileOffset
+fdSeek (Fd fd) mode off =
+    C.throwErrnoIfMinus1 "fdSeek" (c_safe_lseek fd off (mode2Int mode))
+
+
+-- | Repositions the offset of the file descriptor according to the
+-- offset and the seeking mode. This is a variation of 'fdSeek'
+-- which returns errors with an @Either@ instead of throwing
+-- exceptions.
+--
+-- /Since: 0.3.5/
+tryFdSeek :: Fd -> SeekMode -> FileOffset -> IO (Either C.Errno FileOffset)
+tryFdSeek (Fd fd) mode off =
+    eitherErrnoIfMinus1 (c_safe_lseek fd off (mode2Int mode))
 
 ----------------------------------------------------------------
 ----------------------------------------------------------- fin.

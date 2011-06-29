@@ -1,9 +1,9 @@
 ----------------------------------------------------------------
--- wren ng thornton <wren@community.haskell.org>    ~ 2011.04.03
+-- wren ng thornton <wren@community.haskell.org>    ~ 2011.06.28
 ----------------------------------------------------------------
 
 Name:           unix-bytestring
-Version:        0.3.4.1
+Version:        0.3.5
 -- Source-Repository requires version 1.6
 Cabal-Version:  >= 1.6
 -- We need a custom build in order to define __HADDOCK__
@@ -38,7 +38,8 @@ Source-Repository head
 ----------------------------------------------------------------
 Library
     Hs-Source-Dirs:  src
-    Exposed-Modules: System.Posix.IO.ByteString
+    Exposed-Modules: Foreign.C.Error.Safe
+                   , System.Posix.IO.ByteString
                    , System.Posix.IO.ByteString.Lazy
                    , System.Posix.Types.Iovec
 
