@@ -1,20 +1,23 @@
 ----------------------------------------------------------------
--- wren ng thornton <wren@community.haskell.org>    ~ 2011.06.28
+-- wren ng thornton <wren@community.haskell.org>    ~ 2012.02.08
 ----------------------------------------------------------------
 
-Name:           unix-bytestring
-Version:        0.3.5
--- Source-Repository requires version 1.6
+-- By and large Cabal >=1.2 is fine; but >= 1.6 gives tested-with:
+-- and source-repository:.
 Cabal-Version:  >= 1.6
 -- We need a custom build in order to define __HADDOCK__
 Build-Type:     Custom
+
+Name:           unix-bytestring
+Version:        0.3.5.2
 Stability:      experimental
-Copyright:      Copyright (c) 2010--2011 wren ng thornton
-License:        BSD3
-License-File:   LICENSE
+Homepage:       http://code.haskell.org/~wren/
 Author:         wren ng thornton
 Maintainer:     wren@community.haskell.org
-Homepage:       http://code.haskell.org/~wren/
+Copyright:      Copyright (c) 2010--2012 wren ng thornton
+License:        BSD3
+License-File:   LICENSE
+
 Category:       System
 Synopsis:       Unix/Posix-specific functions for ByteStrings.
 Description:    Unix\/Posix-specific functions for ByteStrings.
@@ -30,7 +33,10 @@ Description:    Unix\/Posix-specific functions for ByteStrings.
     dependency. But you'll need it in order to get your hands on
     an @Fd@, so we're not offering a complete replacement.
 
-Tested-With:    GHC == 6.12.1, GHC == 6.12.3
+Tested-With:
+    GHC == 6.12.1, GHC == 6.12.3
+Extra-source-files:
+    README, VERSION
 Source-Repository head
     Type:     darcs
     Location: http://community.haskell.org/~wren/unix-bytestring
