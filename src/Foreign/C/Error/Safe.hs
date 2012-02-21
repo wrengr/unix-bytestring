@@ -1,10 +1,10 @@
 
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2011.06.29
+--                                                    2012.02.21
 -- |
 -- Module      :  Foreign.C.Error.Safe
--- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
+-- Copyright   :  Copyright (c) 2010--2012 wren ng thornton
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
 -- Stability   :  provisional
@@ -99,14 +99,14 @@ eitherErrnoIfRetryMayBlock p f on_block = loop
 
 ----------------------------------------------------------------
 
-eitherErrnoIfMinus1 :: (Num a) => IO a -> IO (Either C.Errno a)
+eitherErrnoIfMinus1 :: (Eq a, Num a) => IO a -> IO (Either C.Errno a)
 eitherErrnoIfMinus1 = eitherErrnoIf (-1 ==)
 
-eitherErrnoIfMinus1Retry :: (Num a) => IO a -> IO (Either C.Errno a)
+eitherErrnoIfMinus1Retry :: (Eq a, Num a) => IO a -> IO (Either C.Errno a)
 eitherErrnoIfMinus1Retry = eitherErrnoIfRetry (-1 ==)
 
 eitherErrnoIfMinus1RetryMayBlock
-    :: (Num a) => IO a -> IO b -> IO (Either C.Errno a)
+    :: (Eq a, Num a) => IO a -> IO b -> IO (Either C.Errno a)
 eitherErrnoIfMinus1RetryMayBlock =
     eitherErrnoIfRetryMayBlock (-1 ==)
 
