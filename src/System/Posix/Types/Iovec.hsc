@@ -4,7 +4,7 @@
 --                                                    2011.03.17
 -- |
 -- Module      :  System.Posix.Types.Iovec
--- Copyright   :  Copyright (c) 2010--2011 wren ng thornton
+-- Copyright   :  Copyright (c) 2010--2012 wren ng thornton
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
 -- Stability   :  experimental
