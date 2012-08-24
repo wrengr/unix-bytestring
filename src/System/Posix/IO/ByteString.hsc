@@ -8,8 +8,21 @@ to combine Cabal-style macros and hsc2hs\/cpp since we can remove
 our dependency on the @unix@ package. But this issue is worth making
 a note of.
 -}
+
+-- GHC 7.6 changed the semantics of the FFI so that we must have
+-- the data constructors in scope in order to import functions using
+-- the given types. However, those data constructors[1] are not exported
+-- in earlier versions, so having @(..)@ will raise warnings on old
+-- systems. However, Cabal-style MIN_VERSION_foo(1,2,3) macros don't
+-- play nicely with hsc2hs; and we need hsc2hs in lieu of CPP for
+-- OS X. So we disable -Wall rather than trying to CPP this problem
+-- away. There doesn't appear to be a -fno-warn-foo for this
+-- particular issue.
+--
+-- [1] CSsize(..), COff(..), CInt(..), CSize(..), CChar(..)
+
 {-# LANGUAGE ForeignFunctionInterface #-}
-{-# OPTIONS_GHC -Wall -fwarn-tabs #-}
+{-# OPTIONS_GHC -fwarn-tabs #-}
 ----------------------------------------------------------------
 --                                                    2012.08.23
 -- |
@@ -78,9 +91,10 @@ import qualified Data.ByteString.Unsafe   as BSU
 import           System.IO                (SeekMode(..))
 import qualified System.IO.Error          as IOE
 import           System.Posix.Types.Iovec
-import           System.Posix.Types       (Fd, ByteCount, FileOffset
+import           System.Posix.Types       ( Fd, ByteCount, FileOffset
                                           , CSsize(..), COff(..))
 import           Foreign.C.Types          (CInt(..), CSize(..), CChar(..))
+
 import qualified Foreign.C.Error          as C
 import           Foreign.C.Error.Safe
 import           Foreign.Ptr              (Ptr, castPtr, plusPtr)
