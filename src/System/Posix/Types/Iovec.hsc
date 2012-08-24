@@ -1,5 +1,11 @@
+-- The -fno-warn-unused-imports flag is to avoid the need for a
+-- special Setup.hs in order to use __HADDOCK__ to conditionally
+-- import Foreign.C.String.CStringLen only for the sake of Haddock.
+-- We avoid the special Setup.hs because in GHC 7.6 the prelude no
+-- longer exports 'catch', and it's not entirely clear what sort
+-- of exceptions from 'removeFile' actually need handling.
 {-# LANGUAGE ForeignFunctionInterface #-}
-{-# OPTIONS_GHC -Wall -fwarn-tabs #-}
+{-# OPTIONS_GHC -Wall -fwarn-tabs -fno-warn-unused-imports #-}
 ----------------------------------------------------------------
 --                                                    2011.03.17
 -- |
@@ -34,9 +40,9 @@ import           Foreign.Storable         (Storable(..))
 
 -- N.B., we need a Custom cabal build-type in order for this to
 -- work.
-#ifdef __HADDOCK__
+-- #ifdef __HADDOCK__
 import Foreign.C.String (CStringLen)
-#endif
+-- #endif
 
 -- iovec, writev, and readv are in <sys/uio.h>, but we must include
 -- <sys/types.h> and <unistd.h> for legacy reasons.
