@@ -11,7 +11,7 @@ a note of.
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2011.06.29
+--                                                    2012.08.23
 -- |
 -- Module      :  System.Posix.IO.ByteString
 -- Copyright   :  Copyright (c) 2010--2012 wren ng thornton
@@ -79,8 +79,8 @@ import           System.IO                (SeekMode(..))
 import qualified System.IO.Error          as IOE
 import           System.Posix.Types.Iovec
 import           System.Posix.Types       (Fd, ByteCount, FileOffset
-                                          , CSsize, COff)
-import           Foreign.C.Types          (CInt, CSize, CChar)
+                                          , CSsize(..), COff(..))
+import           Foreign.C.Types          (CInt(..), CSize(..), CChar(..))
 import qualified Foreign.C.Error          as C
 import           Foreign.C.Error.Safe
 import           Foreign.Ptr              (Ptr, castPtr, plusPtr)

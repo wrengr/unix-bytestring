@@ -1,5 +1,5 @@
 ----------------------------------------------------------------
--- wren ng thornton <wren@community.haskell.org>    ~ 2012.02.21
+-- wren ng thornton <wren@community.haskell.org>    ~ 2012.08.23
 ----------------------------------------------------------------
 
 -- By and large Cabal >=1.2 is fine; but >= 1.6 gives tested-with:
@@ -9,7 +9,7 @@ Cabal-Version:  >= 1.6
 Build-Type:     Custom
 
 Name:           unix-bytestring
-Version:        0.3.5.3
+Version:        0.3.5.4
 Stability:      experimental
 Homepage:       http://code.haskell.org/~wren/
 Author:         wren ng thornton
