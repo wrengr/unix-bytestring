@@ -7,10 +7,10 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -Wall -fwarn-tabs -fno-warn-unused-imports #-}
 ----------------------------------------------------------------
---                                                    2011.03.17
+--                                                    2013.01.10
 -- |
 -- Module      :  System.Posix.Types.Iovec
--- Copyright   :  Copyright (c) 2010--2012 wren ng thornton
+-- Copyright   :  Copyright (c) 2010--2013 wren ng thornton
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
 -- Stability   :  experimental
@@ -35,6 +35,9 @@ import qualified Data.ByteString.Internal as BSI
 import           Foreign.Ptr              (Ptr)
 import qualified Foreign.Ptr              as FFI (castPtr, plusPtr)
 import qualified Foreign.ForeignPtr       as FFP
+-- #if ???
+-- import qualified Foreign.ForeignPtr.Unsafe as FFP (unsafeForeignPtrToPtr)
+-- #endif
 import           Foreign.C.Types          (CSize)
 import           Foreign.Storable         (Storable(..))
 
