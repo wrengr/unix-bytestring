@@ -7,7 +7,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -Wall -fwarn-tabs -fno-warn-unused-imports #-}
 ----------------------------------------------------------------
---                                                    2013.01.10
+--                                                    2013.05.29
 -- |
 -- Module      :  System.Posix.Types.Iovec
 -- Copyright   :  Copyright (c) 2010--2013 wren ng thornton
@@ -35,6 +35,7 @@ import qualified Data.ByteString.Internal as BSI
 import           Foreign.Ptr              (Ptr)
 import qualified Foreign.Ptr              as FFI (castPtr, plusPtr)
 import qualified Foreign.ForeignPtr       as FFP
+import qualified GHC.ForeignPtr           as GHC_FFP
 -- #if ???
 -- import qualified Foreign.ForeignPtr.Unsafe as FFP (unsafeForeignPtrToPtr)
 -- #endif
@@ -101,7 +102,7 @@ instance Storable CIovec where
 unsafeByteString2CIovec :: BS.ByteString -> CIovec
 unsafeByteString2CIovec (BSI.PS fptr offset len) =
     CIovec
-        (FFP.unsafeForeignPtrToPtr fptr `FFI.plusPtr` offset)
+        (GHC_FFP.unsafeForeignPtrToPtr fptr `FFI.plusPtr` offset)
         (fromIntegral len)
 {-# INLINE unsafeByteString2CIovec #-}
 

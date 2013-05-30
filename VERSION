@@ -1,3 +1,5 @@
+0.3.6 (2013-05-29):
+	- System.Posix.Types.Iovec: adjusted unsafeForeignPtrToPtr for GHC 7.8
 0.3.5.4 (2012-08-23):
 	- System.Posix.IO.ByteString: adjusted some imports for GHC 7.6
 	- Removed the custom Setup.hs, for compatibility with GHC 7.6
