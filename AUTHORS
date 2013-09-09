@@ -6,4 +6,6 @@ give thanks to the following contributers:
 
 John Lato --- For helping to debug for GHC 7.4.2.
 
+Kazu Yamamoto --- For helping to debug for GHC 7.8.
+
 Gergely Risko --- For finding and fixing a bug in fdSeek/tryFdSeek.
