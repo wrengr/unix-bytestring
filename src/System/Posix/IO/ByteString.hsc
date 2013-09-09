@@ -24,7 +24,7 @@ a note of.
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2012.08.23
+--                                                    2013.08.08
 -- |
 -- Module      :  System.Posix.IO.ByteString
 -- Copyright   :  Copyright (c) 2010--2012 wren ng thornton
@@ -90,6 +90,7 @@ import qualified Data.ByteString.Unsafe   as BSU
 
 import           System.IO                (SeekMode(..))
 import qualified System.IO.Error          as IOE
+import qualified System.Posix.Internals   as Base
 import           System.Posix.Types.Iovec
 import           System.Posix.Types       ( Fd, ByteCount, FileOffset
                                           , CSsize(..), COff(..))
@@ -754,11 +755,6 @@ fdPwrite fd s offset =
 
 
 ----------------------------------------------------------------
--- It's not clear whether the @unix@ version uses a safe or unsafe call.
-foreign import ccall safe "lseek"
-    -- off_t lseek(int fildes, off_t offset, int whence);
-    c_safe_lseek :: CInt -> COff -> CInt -> IO COff
-
 
 mode2Int :: SeekMode -> CInt
 mode2Int AbsoluteSeek = (#const SEEK_SET)
@@ -771,14 +767,14 @@ mode2Int SeekFromEnd  = (#const SEEK_END)
 -- POSIX.1 @lseek(2)@ system call. If there are any errors, then
 -- they are thrown as 'IOE.IOError' exceptions.
 --
--- This is the same as 'System.Posix.IO.fdSeek' in @unix-2.4.2.0@,
+-- This is the same as 'System.Posix.IO.fdSeek' in @unix-2.6.0.1@,
 -- but provided here for consistency.
 --
 -- /Since: 0.3.5/
 fdSeek :: Fd -> SeekMode -> FileOffset -> IO FileOffset
 fdSeek fd mode off =
     C.throwErrnoIfMinus1 "fdSeek"
-        $ c_safe_lseek (fromIntegral fd) off (mode2Int mode)
+        $ Base.c_lseek (fromIntegral fd) off (mode2Int mode)
 
 
 -- | Repositions the offset of the file descriptor according to the
@@ -790,7 +786,7 @@ fdSeek fd mode off =
 tryFdSeek :: Fd -> SeekMode -> FileOffset -> IO (Either C.Errno FileOffset)
 tryFdSeek fd mode off =
     eitherErrnoIfMinus1
-        $ c_safe_lseek (fromIntegral fd) off (mode2Int mode)
+        $ Base.c_lseek (fromIntegral fd) off (mode2Int mode)
 
 ----------------------------------------------------------------
 ----------------------------------------------------------- fin.

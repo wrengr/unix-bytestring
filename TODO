@@ -6,8 +6,6 @@
 
 * Try getting things to compile under Hugs, JHC, and UHC.
 
-* Make the package public and get feedback to solidify the API.
-
 * Try to get the newest/final version of this package folded into "unix".
 
 * BUG: unix-2.5.1.0==ghc-7.4.1 stole the System.Posix.IO.ByteString module name

@@ -1,0 +1,9 @@
+=== Haskell unix-bytestring package AUTHORS/THANKS file ===
+
+The unix-bytestring package was written by wren ng thornton and is
+released under the terms in the LICENSE file. I would also like to
+give thanks to the following contributers:
+
+John Lato --- For helping to debug for GHC 7.4.2.
+
+Gergely Risko --- For finding and fixing a bug in fdSeek/tryFdSeek.
