@@ -27,7 +27,7 @@ a note of.
 --                                                    2013.08.08
 -- |
 -- Module      :  System.Posix.IO.ByteString
--- Copyright   :  Copyright (c) 2010--2012 wren ng thornton
+-- Copyright   :  Copyright (c) 2010--2012 wren gayle romano
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
 -- Stability   :  experimental
