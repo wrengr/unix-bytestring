@@ -4,7 +4,7 @@
 --                                                    2012.02.21
 -- |
 -- Module      :  Foreign.C.Error.Safe
--- Copyright   :  Copyright (c) 2010--2012 wren gayle romano
+-- Copyright   :  Copyright (c) 2010--2015 wren gayle romano
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
 -- Stability   :  provisional

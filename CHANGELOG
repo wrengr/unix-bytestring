@@ -1,3 +1,5 @@
+0.3.7.3 (2015-05-30):
+    - Moved VERSION to CHANGELOG
 0.3.7 (2013-08-08):
     - System.Posix.IO.ByteString: Corrected a bug in fdSeek/tryFdSeek where the return value was always 0 on largefile i686 systems due to the underlying C function being (undocumentedly) implemented as a macrocall. This had been fixed in unix-2.6.0.1, and I've just backported their fix (replacing the previous unix-2.4.2.0 implementation). Cf:
     * <https://github.com/ghc/packages-base/blob/master/System/Posix/Internals.hs#L414>
