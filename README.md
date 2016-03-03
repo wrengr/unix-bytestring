@@ -1,5 +1,25 @@
 unix-bytestring
 ===============
+[![Hackage version](https://img.shields.io/hackage/v/unix-bytestring.svg?style=flat)](https://hackage.haskell.org/package/unix-bytestring) 
+[![Hackage-Deps](https://img.shields.io/hackage-deps/v/unix-bytestring.svg?style=flat)](http://packdeps.haskellers.com/specific?package=unix-bytestring)
+[![TravisCI Build Status](https://img.shields.io/travis/wrengr/unix-bytestring.svg?style=flat)](https://travis-ci.org/wrengr/unix-bytestring) 
+[![CircleCI Build Status](https://circleci.com/gh/wrengr/unix-bytestring.svg?style=shield&circle-token=b57517657c556be6fd8fca92b843f9e4cffaf8d1)](https://circleci.com/gh/wrengr/unix-bytestring)
+
+Unix/Posix-specific functions for `ByteString`s.
+
+This package provides `ByteString` file-descriptor based I/O API,
+designed loosely after the `String` file-descriptor based I/O API
+in `System.Posix.IO`. The functions here wrap standard C implementations
+of the functions specified by the ISO/IEC 9945-1:1990 (“POSIX.1”)
+and X/Open Portability Guide Issue 4, Version 2 (“XPG4.2”)
+specifications.
+
+Note that this package doesn't require the unix package as a
+dependency. But you'll need it in order to get your hands on an
+`Fd`, so we're not offering a complete replacement.
+
+
+## Install
 
 In general, this is a simple package and should be easy to install.
 You must have hsc2hs installed in order to compile the package (but
@@ -21,24 +41,21 @@ The test step is optional and currently does nothing. The Haddock
 step is also optional.
 
 
-FFI Problems
-============
+### FFI Problems
 
 The unix-bytestring package uses standard POSIX header files
-<sys/types.h>, <sys/uio.h>, and <unistd.h>. If Cabal has difficulty
-finding these files or reports another error, be sure your include
-path variables are correct. If the problem persists, contact the
-maintainer.
+`<sys/types.h>`, `<sys/uio.h>`, and `<unistd.h>`. If Cabal has
+difficulty finding these files or reports another error, be sure
+your include path variables are correct. If the problem persists,
+contact the maintainer.
 
 
-Building for GHC (6.8 and above)
-================================
+### Building for GHC (6.8 and above)
 
 Nothing special to mention. 
 
 
-Building for Hugs (September 2006)
-==================================
+### Building for Hugs (September 2006)
 
 I haven't actually compiled this for Hugs because I don't have a
 new enough version of Cabal for it, but I don't forsee any difficulties.
@@ -87,4 +104,14 @@ the proper level of quoting/escaping. (e.g. using the plural,
 --ffihugs-options=..., breaks it. Wrapping the -F'cpp...' in double
 quotes breaks it.)
 
------------------------------------------------------------ fin.
+
+## Links
+
+* [Website](http://cl.indiana.edu/~wren/)
+* [Blog](http://winterkoninkje.dreamwidth.org/)
+* [Twitter](https://twitter.com/wrengr)
+* [Hackage](http://hackage.haskell.org/package/unix-bytestring)
+* [Darcs](http://code.haskell.org/~wren/unix-bytestring)
+* [GitHub (clone)](https://github.com/wrengr/unix-bytestring)
+* [Haddock (Darcs version)
+    ](http://code.haskell.org/~wren/unix-bytestring/dist/doc/html/unix-bytestring)
