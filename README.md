@@ -1,9 +1,8 @@
 unix-bytestring
 ===============
 [![Hackage version](https://img.shields.io/hackage/v/unix-bytestring.svg?style=flat)](https://hackage.haskell.org/package/unix-bytestring) 
-[![Hackage-Deps](https://img.shields.io/hackage-deps/v/unix-bytestring.svg?style=flat)](http://packdeps.haskellers.com/specific?package=unix-bytestring)
-[![TravisCI Build Status](https://img.shields.io/travis/wrengr/unix-bytestring.svg?style=flat)](https://travis-ci.org/wrengr/unix-bytestring) 
-[![CircleCI Build Status](https://circleci.com/gh/wrengr/unix-bytestring.svg?style=shield&circle-token=b57517657c556be6fd8fca92b843f9e4cffaf8d1)](https://circleci.com/gh/wrengr/unix-bytestring)
+[![Build Status](https://github.com/wrengr/unix-bytestring/workflows/ci/badge.svg)](https://github.com/wrengr/unix-bytestring/actions?query=workflow%3Aci)
+[![Dependencies](https://img.shields.io/hackage-deps/v/unix-bytestring.svg?style=flat)](http://packdeps.haskellers.com/specific?package=unix-bytestring)
 
 Unix/Posix-specific functions for `ByteString`s.
 

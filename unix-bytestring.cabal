@@ -1,19 +1,18 @@
 ----------------------------------------------------------------
--- wren gayle romano <wren@community.haskell.org>   ~ 2015.05.30
+-- wren gayle romano <wren@community.haskell.org>   ~ 2021.10.16
 ----------------------------------------------------------------
 
--- By and large Cabal >=1.2 is fine; but >= 1.6 gives tested-with:
--- and source-repository:.
-Cabal-Version:  >= 1.6
+-- Cabal >=1.10 is required by Hackage.
+Cabal-Version:  >= 1.10
 Build-Type:     Simple
 
 Name:           unix-bytestring
-Version:        0.3.7.3
+Version:        0.3.7.4
 Stability:      provisional
 Homepage:       http://code.haskell.org/~wren/
 Author:         wren gayle romano
 Maintainer:     wren@community.haskell.org
-Copyright:      Copyright (c) 2010--2015 wren gayle romano
+Copyright:      Copyright (c) 2010--2021 wren gayle romano
 License:        BSD3
 License-File:   LICENSE
 
@@ -32,16 +31,28 @@ Description:    Unix\/Posix-specific functions for ByteStrings.
     dependency. But you'll need it in order to get your hands on
     an @Fd@, so we're not offering a complete replacement.
 
-Tested-With:
-    GHC ==6.12.1, GHC ==6.12.3, GHC ==7.4.2, GHC ==7.6.1, GHC ==7.8.0
 Extra-source-files:
-    README, CHANGELOG
+    README.md, CHANGELOG
+
+-- This used to work with GHC 6.12.1, 6.12.3, 7.4.2, 7.6.1, 7.8.0,
+-- but we don't verify any of those with CI.
+-- <https://github.com/wrengr/unix-bytestring/actions?query=workflow%3Aci>
+Tested-With:
+    GHC ==8.0.2,
+    GHC ==8.2.2,
+    GHC ==8.4.4,
+    GHC ==8.6.5,
+    GHC ==8.8.4,
+    GHC ==8.10.3,
+    GHC ==9.0.1
+
 Source-Repository head
     Type:     darcs
     Location: http://community.haskell.org/~wren/unix-bytestring
 
 ----------------------------------------------------------------
 Library
+    Default-Language: Haskell2010
     Hs-Source-Dirs:  src
     Exposed-Modules: Foreign.C.Error.Safe
                    , System.Posix.IO.ByteString
@@ -55,8 +66,8 @@ Library
     -- them on our own for better backwards compatibility.
     --
     -- Not sure what the real minbound is on bytestring...
-    Build-Depends: base       >= 4.1 && < 5
-                 , bytestring >= 0.9.1.5
+    Build-Depends: base       >= 4.1     && < 4.16
+                 , bytestring >= 0.9.1.5 && < 0.12
 
 ----------------------------------------------------------------
 ----------------------------------------------------------- fin.

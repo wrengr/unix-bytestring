@@ -89,10 +89,10 @@ fdWrites fd = go 0
     -- but we need to have an early exit for incomplete writes
     -- (which normally requires a right fold). Hence this recursion.
     go acc BLI.Empty        = return (acc, BL.empty)
-    go acc (BLI.Chunk c cs) = do
-        rc <- PosixBS.fdWrite fd c
-        let acc'  = acc+rc          in acc'  `seq` do
-        let rcInt = fromIntegral rc in rcInt `seq` do
+    go acc (BLI.Chunk c cs) =
+        PosixBS.fdWrite fd c >>= \rc ->
+        let acc'  = acc+rc          in acc'  `seq`
+        let rcInt = fromIntegral rc in rcInt `seq`
         if rcInt == BS.length c
             then go acc' cs
             else return (acc', BLI.Chunk (BSU.unsafeDrop rcInt c) cs)

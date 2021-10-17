@@ -24,10 +24,10 @@ a note of.
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2013.08.08
+--                                                    2021.10.16
 -- |
 -- Module      :  System.Posix.IO.ByteString
--- Copyright   :  Copyright (c) 2010--2015 wren gayle romano
+-- Copyright   :  Copyright (c) 2010--2021 wren gayle romano
 -- License     :  BSD
 -- Maintainer  :  wren@community.haskell.org
 -- Stability   :  experimental
@@ -58,7 +58,7 @@ module System.Posix.IO.ByteString
     , fdPreadBuf
     , tryFdPreadBuf
     , fdPreads
-    
+
     -- ** Writing
     -- *** The POSIX.1 @write(2)@ syscall
     , fdWrite
@@ -73,9 +73,9 @@ module System.Posix.IO.ByteString
     , fdPwrite
     , fdPwriteBuf
     , tryFdPwriteBuf
-    
+
     -- ** Seeking
-    -- | These functions are not 'ByteString' related, but are
+    -- | These functions are not 'BS.ByteString' related, but are
     -- provided here for API completeness.
 
     -- *** The POSIX.1 @lseek(2)@ syscall
@@ -189,7 +189,7 @@ fdRead
     -> IO BS.ByteString -- ^ The bytes read.
 fdRead fd nbytes
     | nbytes <= 0 = return BS.empty
-    | otherwise   = 
+    | otherwise   =
         BSI.createAndTrim (fromIntegral nbytes) $ \buf -> do
             rc <- fdReadBuf fd buf nbytes
             if 0 == rc
@@ -269,7 +269,7 @@ foreign import ccall safe "readv"
 -- if iovcnt <= 0 || > 16,
 -- if one of the iov_len values in the iov array was negative,
 -- if the sum of the iov_len values in the iov array overflowed a 32-bit integer.
-    
+
 fdReadvBufSafe :: Fd -> Ptr CIovec -> Int -> IO ByteCount
 fdReadvBufSafe fd = go 0
     where
@@ -477,7 +477,7 @@ _fdPreads = "System.Posix.IO.ByteString.fdPreads"
 
 ----------------------------------------------------------------
 ----------------------------------------------------------------
-foreign import ccall safe "write" 
+foreign import ccall safe "write"
     -- ssize_t write(int fildes, const void *buf, size_t nbyte);
     c_safe_write :: CInt -> Ptr CChar -> CSize -> IO CSsize
 
@@ -498,7 +498,7 @@ fdWriteBuf
     -> IO ByteCount -- ^ How many bytes were actually written.
 fdWriteBuf fd buf nbytes
     | nbytes <= 0 = return 0
-    | otherwise   = 
+    | otherwise   =
         fmap fromIntegral
             $ C.throwErrnoIfMinus1Retry _fdWriteBuf
                 $ c_safe_write
@@ -578,9 +578,9 @@ fdWrites fd = go 0
     -- but we need to have an early exit for incomplete writes
     -- (which normally requires a right fold). Hence this recursion.
     go acc []         = return (acc, 0, [])
-    go acc ccs@(c:cs) = do
-        rc <- fdWrite fd c
-        let acc' = acc+rc in acc' `seq` do
+    go acc ccs@(c:cs) =
+        fdWrite fd c >>= \rc ->
+        let acc' = acc+rc in acc' `seq`
         if rc == fromIntegral (BS.length c)
             then go acc' cs
             else return (acc', rc, ccs)
