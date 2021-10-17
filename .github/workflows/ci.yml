@@ -28,8 +28,6 @@ jobs:
         # Note(2021.10.16): GitHub now has 9.0.1.
         ghc: ['8.0.2', '8.2.2', '8.4.4', '8.6.5', '8.8.4', '8.10.3', '9.0.1']
         include:
-        - os: windows-latest
-          ghc: 'latest' # Lacking Win-specific bits, latest should suffice.
         - os: macOS-latest
           ghc: 'latest' # Lacking Mac-specific bits, latest should suffice.
     steps:
