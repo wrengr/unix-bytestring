@@ -1,3 +1,6 @@
+0.3.7.4 (2021-10-16):
+	- Started using GithubActions for CI.
+	- Corrected parsing errors with newer GHC.
 0.3.7.3 (2015-05-30):
     - Moved VERSION to CHANGELOG
 0.3.7 (2013-08-08):
