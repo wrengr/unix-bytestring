@@ -10,6 +10,7 @@ Name:           unix-bytestring
 Version:        0.3.7.4
 Stability:      provisional
 Homepage:       http://code.haskell.org/~wren/
+Bug-Reports:    http://github.com/wrengr/unix-bytestring/issues
 Author:         wren gayle romano
 Maintainer:     wren@community.haskell.org
 Copyright:      Copyright (c) 2010--2021 wren gayle romano
