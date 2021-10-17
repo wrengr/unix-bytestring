@@ -23,21 +23,9 @@ dependency. But you'll need it in order to get your hands on an
 In general, this is a simple package and should be easy to install.
 You must have hsc2hs installed in order to compile the package (but
 then you probably already do). With the cabal-install program you
-can just do:
+can just do the standard:
 
     $> cabal install unix-bytestring
-
-Or if you don't have cabal-install, then you can use the Cabal library:
-
-    $> runhaskell Setup.hs configure
-    $> runhaskell Setup.hs build
-    $> runhaskell Setup.hs test
-    $> runhaskell Setup.hs haddock --hyperlink-source
-    $> runhaskell Setup.hs copy
-    $> runhaskell Setup.hs register
-
-The test step is optional and currently does nothing. The Haddock
-step is also optional.
 
 
 ### FFI Problems
@@ -106,11 +94,8 @@ quotes breaks it.)
 
 ## Links
 
-* [Website](http://cl.indiana.edu/~wren/)
+* [Website](http://wrengr.org/)
 * [Blog](http://winterkoninkje.dreamwidth.org/)
 * [Twitter](https://twitter.com/wrengr)
 * [Hackage](http://hackage.haskell.org/package/unix-bytestring)
-* [Darcs](http://code.haskell.org/~wren/unix-bytestring)
-* [GitHub (clone)](https://github.com/wrengr/unix-bytestring)
-* [Haddock (Darcs version)
-    ](http://code.haskell.org/~wren/unix-bytestring/dist/doc/html/unix-bytestring)
+* [GitHub](https://github.com/wrengr/unix-bytestring)
