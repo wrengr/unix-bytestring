@@ -1,12 +1,12 @@
 
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2012.02.21
+--                                                    2021.10.17
 -- |
 -- Module      :  Foreign.C.Error.Safe
--- Copyright   :  Copyright (c) 2010--2015 wren gayle romano
+-- Copyright   :  Copyright (c) 2010--2021 wren gayle romano
 -- License     :  BSD
--- Maintainer  :  wren@community.haskell.org
+-- Maintainer  :  wren@cpan.org
 -- Stability   :  provisional
 -- Portability :  portable (H98+FFI)
 --

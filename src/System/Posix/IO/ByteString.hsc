@@ -24,12 +24,12 @@ a note of.
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2021.10.16
+--                                                    2021.10.17
 -- |
 -- Module      :  System.Posix.IO.ByteString
 -- Copyright   :  Copyright (c) 2010--2021 wren gayle romano
 -- License     :  BSD
--- Maintainer  :  wren@community.haskell.org
+-- Maintainer  :  wren@cpan.org
 -- Stability   :  experimental
 -- Portability :  non-portable (POSIX.1, XPG4.2; hsc2hs, FFI)
 --

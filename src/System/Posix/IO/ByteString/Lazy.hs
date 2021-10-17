@@ -1,12 +1,12 @@
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 -- TODO: cf <http://hpaste.org/76873>
 ----------------------------------------------------------------
---                                                    2011.03.17
+--                                                    2021.10.17
 -- |
 -- Module      :  System.Posix.IO.ByteString.Lazy
--- Copyright   :  Copyright (c) 2010--2015 wren gayle romano
+-- Copyright   :  Copyright (c) 2010--2021 wren gayle romano
 -- License     :  BSD
--- Maintainer  :  wren@community.haskell.org
+-- Maintainer  :  wren@cpan.org
 -- Stability   :  experimental
 -- Portability :  non-portable (requires POSIX.1, XPG4.2)
 --
