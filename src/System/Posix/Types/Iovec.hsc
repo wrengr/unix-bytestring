@@ -1,11 +1,5 @@
--- The -fno-warn-unused-imports flag is to avoid the need for a
--- special Setup.hs in order to use __HADDOCK__ to conditionally
--- import Foreign.C.String.CStringLen only for the sake of Haddock.
--- We avoid the special Setup.hs because in GHC 7.6 the prelude no
--- longer exports 'catch', and it's not entirely clear what sort
--- of exceptions from 'removeFile' actually need handling.
 {-# LANGUAGE ForeignFunctionInterface #-}
-{-# OPTIONS_GHC -Wall -fwarn-tabs -fno-warn-unused-imports #-}
+{-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
 --                                                    2021.10.17
 -- |
@@ -42,12 +36,6 @@ import qualified GHC.ForeignPtr           as GHC_FFP
 import           Foreign.C.Types          (CSize)
 import           Foreign.Storable         (Storable(..))
 
--- N.B., we need a Custom cabal build-type in order for this to
--- work.
--- #ifdef __HADDOCK__
-import Foreign.C.String (CStringLen)
--- #endif
-
 -- iovec, writev, and readv are in <sys/uio.h>, but we must include
 -- <sys/types.h> and <unistd.h> for legacy reasons.
 #include <sys/types.h>
@@ -57,8 +45,8 @@ import Foreign.C.String (CStringLen)
 ----------------------------------------------------------------
 
 -- | Haskell type representing the C @struct iovec@ type. This is
--- exactly like @'CStringLen'@ except there's actually struct
--- definition on the C side.
+-- exactly like 'Foreign.C.String.CStringLen' except there's actually
+-- struct definition on the C side.
 data CIovec = CIovec
     { iov_base :: {-# UNPACK #-} !(Ptr Word8) -- char* or void*
     , iov_len  :: {-# UNPACK #-} !CSize       -- size_t
