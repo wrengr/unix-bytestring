@@ -1,5 +1,5 @@
 ----------------------------------------------------------------
--- wren gayle romano <wren@cpan.org>                ~ 2021.10.17
+-- wren gayle romano <wren@cpan.org>                ~ 2021.11.02
 ----------------------------------------------------------------
 
 -- Cabal >=1.10 is required by Hackage.
@@ -7,7 +7,7 @@ Cabal-Version:  >= 1.10
 Build-Type:     Simple
 
 Name:           unix-bytestring
-Version:        0.3.7.5
+Version:        0.3.7.6
 Stability:      provisional
 Homepage:       https://wrengr.org/software/hackage.html
 Bug-Reports:    https://github.com/wrengr/unix-bytestring/issues
@@ -35,8 +35,7 @@ Description:    Unix\/Posix-specific functions for ByteStrings.
 Extra-source-files:
     README.md, CHANGELOG
 
--- This used to work with GHC 6.12.1, 6.12.3, 7.4.2, 7.6.1, 7.8.0,
--- but we don't verify any of those with CI.
+-- This used to work as far back as GHC 6.12.1 but we don't verify that with CI.
 -- <https://github.com/wrengr/unix-bytestring/actions?query=workflow%3Aci>
 Tested-With:
     GHC ==8.0.2,
@@ -45,7 +44,8 @@ Tested-With:
     GHC ==8.6.5,
     GHC ==8.8.4,
     GHC ==8.10.3,
-    GHC ==9.0.1
+    GHC ==9.0.1,
+    GHC ==9.2.1
 
 Source-Repository head
     Type:     git
@@ -67,7 +67,7 @@ Library
     -- them on our own for better backwards compatibility.
     --
     -- Not sure what the real minbound is on bytestring...
-    Build-Depends: base       >= 4.1     && < 4.16
+    Build-Depends: base       >= 4.1     && < 4.17
                  , bytestring >= 0.9.1.5 && < 0.12
 
 ----------------------------------------------------------------

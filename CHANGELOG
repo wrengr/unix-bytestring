@@ -1,4 +1,6 @@
-0.3.7.5 (2021-xx-xx):
+0.3.7.6 (2021-11-02):
+    - Updated version bounds for GHC 8.2.1
+0.3.7.5 (2021-10-24):
     - Updating maintainer emails/urls
     - Removed the __HADDOCK__ hack
     - Generally cleaning up old cruft
