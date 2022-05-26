@@ -27,8 +27,8 @@ a note of.
 --                                                    2021.10.17
 -- |
 -- Module      :  System.Posix.IO.ByteString
--- Copyright   :  Copyright (c) 2010--2021 wren gayle romano
--- License     :  BSD
+-- Copyright   :  2010--2022 wren romano
+-- License     :  BSD-3-Clause
 -- Maintainer  :  wren@cpan.org
 -- Stability   :  experimental
 -- Portability :  non-portable (POSIX.1, XPG4.2; hsc2hs, FFI)

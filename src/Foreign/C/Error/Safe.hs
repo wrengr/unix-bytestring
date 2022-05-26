@@ -4,8 +4,8 @@
 --                                                    2021.10.17
 -- |
 -- Module      :  Foreign.C.Error.Safe
--- Copyright   :  Copyright (c) 2010--2021 wren gayle romano
--- License     :  BSD
+-- Copyright   :  2010--2022 wren romano
+-- License     :  BSD-3-Clause
 -- Maintainer  :  wren@cpan.org
 -- Stability   :  provisional
 -- Portability :  portable (H98+FFI)
