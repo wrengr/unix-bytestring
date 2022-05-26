@@ -1,3 +1,6 @@
+0.3.7.7 (2022-05-25):
+    - Updated the `alignment` macro to avoid warnings on hsc2hs-0.68 (ghc-8.0); also fixing cross-compilation for Arm AArch64:
+    * <https://gitlab.haskell.org/ghc/ghc/-/wikis/migration/8.0#hsc2hs-defines-an-alignment-macro>
 0.3.7.6 (2021-11-02):
     - Updated version bounds for GHC 8.2.1
 0.3.7.5 (2021-10-24):
