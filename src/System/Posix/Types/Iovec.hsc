@@ -1,11 +1,11 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2021.10.17
+--                                                    2022.05.25
 -- |
 -- Module      :  System.Posix.Types.Iovec
--- Copyright   :  Copyright (c) 2010--2021 wren gayle romano
--- License     :  BSD
+-- Copyright   :  2010--2022 wren romano
+-- License     :  BSD-3-Clause
 -- Maintainer  :  wren@cpan.org
 -- Stability   :  experimental
 -- Portability :  non-portable (POSIX.1, XPG4.2; hsc2hs, FFI)
@@ -52,6 +52,9 @@ data CIovec = CIovec
     , iov_len  :: {-# UNPACK #-} !CSize       -- size_t
     }
 
+-- This traditional macro has been incorporated into hcs2hs-0.68
+-- (GHC 8.0), so we cpp guard it for older compilers.
+-- <https://gitlab.haskell.org/ghc/ghc/-/wikis/migration/8.0#hsc2hs-defines-an-alignment-macro>
 #if __GLASGOW_HASKELL__ < 800
 #let alignment t = \
     "%lu", (unsigned long) offsetof(struct {char x__; t (y__); }, y__)
