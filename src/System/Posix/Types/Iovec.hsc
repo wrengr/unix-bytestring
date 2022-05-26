@@ -52,8 +52,10 @@ data CIovec = CIovec
     , iov_len  :: {-# UNPACK #-} !CSize       -- size_t
     }
 
+#if __GLASGOW_HASKELL__ < 800
 #let alignment t = \
     "%lu", (unsigned long) offsetof(struct {char x__; t (y__); }, y__)
+#endif
 
 instance Storable CIovec where
     alignment _ = #{alignment struct iovec}
