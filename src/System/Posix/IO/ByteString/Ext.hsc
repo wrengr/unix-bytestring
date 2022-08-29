@@ -24,9 +24,9 @@ a note of.
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -fwarn-tabs #-}
 ----------------------------------------------------------------
---                                                    2021.10.17
+--                                                    2022.08.28
 -- |
--- Module      :  System.Posix.IO.ByteString
+-- Module      :  System.Posix.IO.ByteString.Ext
 -- Copyright   :  2010--2022 wren romano
 -- License     :  BSD-3-Clause
 -- Maintainer  :  wren@cpan.org
@@ -34,13 +34,17 @@ a note of.
 -- Portability :  non-portable (POSIX.1, XPG4.2; hsc2hs, FFI)
 --
 -- Provides a strict-'BS.ByteString' file-descriptor based I\/O
--- API, designed loosely after the @String@ file-descriptor based
--- I\/O API in "System.Posix.IO". The functions here wrap standard
--- C implementations of the functions specified by the ISO\/IEC
--- 9945-1:1990 (``POSIX.1'') and X\/Open Portability Guide Issue
--- 4, Version 2 (``XPG4.2'') specifications.
+-- API wrapping the standard C implementations of the functions
+-- specified by the ISO\/IEC 9945-1:1990 (``POSIX.1'') and X\/Open
+-- Portability Guide Issue 4, Version 2 (``XPG4.2'') specifications.
+--
+-- The API was originally designed loosely after the @String@ based
+-- API in "System.Posix.IO", but significantly extending that API.
+-- The `unix-2.8.0.0` package added a subset of our original API
+-- in "System.Posix.IO.ByteString", so as of version 0.4.0 this
+-- module has been renamed in order to avoid conflicts.
 ----------------------------------------------------------------
-module System.Posix.IO.ByteString
+module System.Posix.IO.ByteString.Ext
     (
     -- * I\/O with file descriptors
     -- ** Reading
@@ -121,18 +125,23 @@ ioErrorEOF fun =
 
 
 ----------------------------------------------------------------
+-- @ssize_t read(int fildes, void *buf, size_t nbyte)@
+-- TODO: Portability: why using `CChar` instead of `Word8` or something else for `void*`?
 foreign import ccall safe "read"
-    -- ssize_t read(int fildes, void *buf, size_t nbyte);
     c_safe_read :: CInt -> Ptr CChar -> CSize -> IO CSsize
 
 
+-- TODO: reexport `unix-2.8.0.0` version if available...
+-- FIXME: what is the behavior for @unix-2.8.0.0@?
+--
 -- | Read data from an 'Fd' into memory. This is exactly equivalent
 -- to the POSIX.1 @read(2)@ system call, except that we return 0
 -- bytes read if the @ByteCount@ argument is less than or equal to
--- zero (instead of throwing an errno exception). /N.B./, this
--- behavior is different from the version in @unix-2.4.2.0@ which
--- only checks for equality to zero. If there are any errors, then
--- they are thrown as 'IOE.IOError' exceptions.
+-- zero (instead of throwing an errno exception).
+--
+-- /N.B./, this behavior is different from the version in @unix-2.4.2.0@
+-- which only checks for equality to zero. If there are any errors,
+-- then they are thrown as 'IOE.IOError' exceptions.
 --
 -- /Since: 0.3.0/
 fdReadBuf
@@ -178,6 +187,9 @@ tryFdReadBuf fd buf nbytes
 
 
 ----------------------------------------------------------------
+-- TODO: reexport `unix-2.8.0.0` version if available...
+-- FIXME: what is the behavior for @unix-2.8.0.0@?
+--
 -- | Read data from an 'Fd' and convert it to a 'BS.ByteString'.
 -- Throws an exception if this is an invalid descriptor, or EOF has
 -- been reached. This is essentially equivalent to 'fdReadBuf'; the
@@ -261,8 +273,8 @@ _fdReads = "System.Posix.IO.ByteString.fdReads"
 
 
 ----------------------------------------------------------------
+-- @ssize_t readv(int fildes, const struct iovec *iov, int iovcnt)@
 foreign import ccall safe "readv"
-    -- ssize_t readv(int fildes, const struct iovec *iov, int iovcnt);
     c_safe_readv :: CInt -> Ptr CIovec -> CInt -> IO CSsize
 {-
 -- N.B., c_safe_readv will throw errno=EINVAL
@@ -352,8 +364,9 @@ tryFdReadvBuf fd bufs len
 -- TODO: What's a reasonable wrapper for fdReadvBuf to make it Haskellish?
 
 ----------------------------------------------------------------
+-- @ssize_t pread(int fildes, void *buf, size_t nbyte, off_t offset)@
+-- TODO: Portability: why using `Word8` instead of something else for `void*`?
 foreign import ccall safe "pread"
-    -- ssize_t pread(int fildes, void *buf, size_t nbyte, off_t offset);
     c_safe_pread :: CInt -> Ptr Word8 -> CSize -> COff -> IO CSsize
 
 
@@ -477,11 +490,15 @@ _fdPreads = "System.Posix.IO.ByteString.fdPreads"
 
 ----------------------------------------------------------------
 ----------------------------------------------------------------
+-- @ssize_t write(int fildes, const void *buf, size_t nbyte)@
+-- TODO: Portability: why using `CChar` instead of `Word8` or something else for `void*`?
 foreign import ccall safe "write"
-    -- ssize_t write(int fildes, const void *buf, size_t nbyte);
     c_safe_write :: CInt -> Ptr CChar -> CSize -> IO CSsize
 
 
+-- TODO: reexport `unix-2.8.0.0` version if available...
+-- FIXME: what is the behavior for @unix-2.8.0.0@?
+--
 -- | Write data from memory to an 'Fd'. This is exactly equivalent
 -- to the POSIX.1 @write(2)@ system call, except that we return 0
 -- bytes written if the @ByteCount@ argument is less than or equal
@@ -533,6 +550,9 @@ tryFdWriteBuf fd buf nbytes
                     (fromIntegral nbytes)
 
 ----------------------------------------------------------------
+-- TODO: reexport `unix-2.8.0.0` version if available...
+-- FIXME: what is the behavior for @unix-2.8.0.0@?
+--
 -- | Write a 'BS.ByteString' to an 'Fd'. The return value is the
 -- total number of bytes actually written. This is exactly equivalent
 -- to 'fdWriteBuf'; we just convert the @ByteString@ into its
@@ -587,8 +607,8 @@ fdWrites fd = go 0
 
 
 ----------------------------------------------------------------
+-- @ssize_t writev(int fildes, const struct iovec *iov, int iovcnt)@
 foreign import ccall safe "writev"
-    -- ssize_t writev(int fildes, const struct iovec *iov, int iovcnt);
     c_safe_writev :: CInt -> Ptr CIovec -> CInt -> IO CSsize
 {-
 -- N.B., c_safe_readv will throw errno=EINVAL
@@ -672,8 +692,9 @@ fdWritev fd cs = do
 
 
 ----------------------------------------------------------------
+-- @ssize_t pwrite(int fildes, const void *buf, size_t nbyte, off_t offset)@
+-- TODO: Portability: why using `Word8` instead of something else for `void*`?
 foreign import ccall safe "pwrite"
-    -- ssize_t pwrite(int fildes, const void *buf, size_t nbyte, off_t offset);
     c_safe_pwrite :: CInt -> Ptr Word8 -> CSize -> COff -> IO CSsize
 
 
@@ -762,6 +783,9 @@ mode2Int RelativeSeek = (#const SEEK_CUR)
 mode2Int SeekFromEnd  = (#const SEEK_END)
 
 
+-- TODO: reexport `unix-2.8.0.0` version if available...
+-- FIXME: what is the behavior for @unix-2.8.0.0@?
+--
 -- | Repositions the offset of the file descriptor according to the
 -- offset and the seeking mode. This is exactly equivalent to the
 -- POSIX.1 @lseek(2)@ system call. If there are any errors, then

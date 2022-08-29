@@ -10,7 +10,7 @@ Cabal-Version:  2.2
 ----------------------------------------------------------------
 
 Name:           unix-bytestring
-Version:        0.3.7.8
+Version:        0.4.0
 Build-Type:     Simple
 Stability:      provisional
 Homepage:       https://wrengr.org/software/hackage.html
@@ -62,8 +62,8 @@ Library
     Default-Language: Haskell2010
     Hs-Source-Dirs:  src
     Exposed-Modules: Foreign.C.Error.Safe
-                   , System.Posix.IO.ByteString
-                   , System.Posix.IO.ByteString.Lazy
+                   , System.Posix.IO.ByteString.Ext
+                   , System.Posix.IO.ByteString.Ext.Lazy
                    , System.Posix.Types.Iovec
 
     -- We require base>=4.1 for Foreign.C.Error.throwErrnoIfMinus1Retry.
@@ -71,6 +71,8 @@ Library
     -- We would require unix>=2.4 for System.Posix.IO.fdReadBuf/fdWriteBuf
     -- (and unix-2.4.0.0 requires base>=4.1 too), except we define
     -- them on our own for better backwards compatibility.
+    --
+    -- FIXME: unix-2.8.0.0 introduces some additional conflicts
     --
     -- Not sure what the real minbound is on bytestring...
     Build-Depends: base       >= 4.1     && < 4.18

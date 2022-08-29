@@ -1,27 +1,22 @@
 {-# OPTIONS_GHC -Wall -fwarn-tabs #-}
 -- TODO: cf <http://hpaste.org/76873>
 ----------------------------------------------------------------
---                                                    2021.10.17
+--                                                    2022.08.28
 -- |
--- Module      :  System.Posix.IO.ByteString.Lazy
+-- Module      :  System.Posix.IO.ByteString.Ext.Lazy
 -- Copyright   :  2010--2022 wren romano
 -- License     :  BSD-3-Clause
 -- Maintainer  :  wren@cpan.org
 -- Stability   :  experimental
 -- Portability :  non-portable (requires POSIX.1, XPG4.2)
 --
--- Provides a lazy-'BL.ByteString' file-descriptor based I\/O
--- API, designed loosely after the @String@ file-descriptor based
--- I\/O API in "System.Posix.IO". The functions here wrap standard
--- C implementations of the functions specified by the ISO\/IEC
--- 9945-1:1990 (``POSIX.1'') and X\/Open Portability Guide Issue
--- 4, Version 2 (``XPG4.2'') specifications.
---
--- These functions are provided mainly as a convenience to avoid
--- boilerplate code converting between lazy 'BL.ByteString' and
--- strict @['BS.ByteString']@. It may be depricated in the future.
+-- Provides a lazy-'BL.ByteString' variant of "System.Posix.IO.ByteString.Ext",
+-- to avoid boilerplate code for converting between lazy-'BL.ByteString'
+-- and strict @['BS.ByteString']@.  This module was renamed in
+-- version 0.4.0 to mirror the renaming of the strict module.
+-- See the documentation there for the reason why.
 ----------------------------------------------------------------
-module System.Posix.IO.ByteString.Lazy
+module System.Posix.IO.ByteString.Ext.Lazy
     (
     -- * I\/O with file descriptors
     -- ** Reading
@@ -34,7 +29,7 @@ module System.Posix.IO.ByteString.Lazy
 
 import qualified Data.ByteString               as BS
 import qualified Data.ByteString.Unsafe        as BSU
-import qualified System.Posix.IO.ByteString    as PosixBS
+import qualified System.Posix.IO.ByteString.Ext as PosixBS
 import qualified Data.ByteString.Lazy          as BL
 import qualified Data.ByteString.Lazy.Internal as BLI
 import           System.Posix.Types            (Fd, ByteCount, FileOffset)
@@ -132,6 +127,9 @@ fdWritev
 fdWritev fd s = PosixBS.fdWritev fd (BL.toChunks s)
 {-# INLINE fdWritev #-}
 -- Hopefully the intermediate list can be fused away...
+
+-- TODO: a variant of `fdWritev` with a return type matching
+-- `fdWrites` yet only making the one @writev(2)@ syscall.
 
 
 ----------------------------------------------------------------
