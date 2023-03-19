@@ -1,5 +1,6 @@
-0.4.0 (2022-xx-xx):
+0.4.0 (2023-03-19):
     - Renaming modules to avoid conflicts with unix-2.8.0.0
+    - Updating version bounds for GHC 9.6
 
 0.3.7.8 (2022-08-28):
     - Updated version bounds for GHC 9.4

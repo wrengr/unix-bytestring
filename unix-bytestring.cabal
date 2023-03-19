@@ -10,7 +10,7 @@ Cabal-Version:  2.2
 ----------------------------------------------------------------
 
 Name:           unix-bytestring
-Version:        0.4.0.1
+Version:        0.4.0
 Build-Type:     Simple
 Stability:      provisional
 Homepage:       https://wrengr.org/software/hackage.html
