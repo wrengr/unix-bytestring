@@ -54,7 +54,8 @@ Tested-With:
     GHC ==9.4.8,
     GHC ==9.6.5,
     GHC ==9.8.2,
-    GHC ==9.10.1
+    GHC ==9.10.1,
+    GHC ==9.12.1
 
 Source-Repository head
     Type:     git
@@ -76,7 +77,7 @@ Library
     -- them on our own for better backwards compatibility.
     --
     -- FIXME: unix-2.8.0.0 introduces some additional conflicts
-    Build-Depends: base       >= 4.9    && < 4.21
+    Build-Depends: base       >= 4.9    && < 4.22
                  , bytestring >= 0.10.8 && < 0.13
 
 ----------------------------------------------------------------
