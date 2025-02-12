@@ -1,8 +1,9 @@
 unix-bytestring
 ===============
+[![CI Status](https://github.com/wrengr/unix-bytestring/actions/workflows/ci.yml/badge.svg)](https://github.com/wrengr/unix-bytestring/actions?query=workflow%3Aci+-event%3Apull_request)
 [![Hackage version](https://img.shields.io/hackage/v/unix-bytestring.svg?style=flat)](https://hackage.haskell.org/package/unix-bytestring) 
-[![Build Status](https://github.com/wrengr/unix-bytestring/workflows/ci/badge.svg)](https://github.com/wrengr/unix-bytestring/actions?query=workflow%3Aci)
-[![Dependencies](https://img.shields.io/hackage-deps/v/unix-bytestring.svg?style=flat)](http://packdeps.haskellers.com/specific?package=unix-bytestring)
+[![Stackage LTS version](https://stackage.org/package/unix-bytestring/badge/lts)](https://stackage.org/lts/package/unix-bytestring)
+[![Stackage Nightly version](https://stackage.org/package/unix-bytestring/badge/nightly)](https://stackage.org/nightly/package/unix-bytestring)
 
 Unix/Posix-specific functions for `ByteString`s.
 
