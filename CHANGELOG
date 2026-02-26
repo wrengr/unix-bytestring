@@ -1,3 +1,5 @@
+0.4.0.4 (2026-02-26):
+    - Updating version bounds for GHC 9.14
 0.4.0.3 (2025-02-11):
     - Updating version bounds for GHC 9.12
 0.4.0.2 (2024-08-28):
